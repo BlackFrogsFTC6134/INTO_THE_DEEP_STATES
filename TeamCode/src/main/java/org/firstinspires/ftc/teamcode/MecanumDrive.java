@@ -51,6 +51,19 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_ACCEL;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_ANG_ACCEL;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_ANG_VEL;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_VEL;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MOTOR_VELO_PID;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.RUN_USING_ENCODER;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.TRACK_WIDTH;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.encoderTicksToInches;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kA;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kStatic;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kV;
+
+// FTC dashboard http://192.168.43.1:8080/dash
 @Config
 public final class MecanumDrive {
     public static class Params {
@@ -60,17 +73,17 @@ public final class MecanumDrive {
         public RevHubOrientationOnRobot.LogoFacingDirection logoFacingDirection =
                 RevHubOrientationOnRobot.LogoFacingDirection.UP; //Blackfrog_Setting for 2023 season
         public RevHubOrientationOnRobot.UsbFacingDirection usbFacingDirection =
-                RevHubOrientationOnRobot.UsbFacingDirection.LEFT; //Blackfrog_Setting for 2023 season
+                RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD; //Blackfrog_Setting for 2023 season
 
         // drive model parameters
-        public double inPerTick = 44.3; // Blackfrog_Setting https://rr.brott.dev/docs/v1-0/tuning. Refer to ForwardPushTest
+        public double inPerTick = 0.025297093986477; // Blackfrog_Setting. 141.24/5583.75 https://rr.brott.dev/docs/v1-0/tuning. Refer to ForwardPushTest
         public double lateralInPerTick = inPerTick; // Blackfrog_Setting https://rr.brott.dev/docs/v1-0/tuning. Refer to LateralPushTest
-        public double trackWidthTicks = 1406.3093008668825; // Blackfrog_Setting https://rr.brott.dev/docs/v1-0/tuning. Refer to either Drive Encoders or Dead Wheels section
+        public double trackWidthTicks = 35.320744330791776; // Blackfrog_Setting https://rr.brott.dev/docs/v1-0/tuning. Refer to either Drive Encoders or Dead Wheels section
 
         // feedforward parameters (in tick units)
-        public double kS = 1.0073965299852947; // Blackfrog_Setting
-        public double kV = 0.004231531571965215; // Blackfrog_Setting
-        public double kA = 1; // Blackfrog_Setting
+        public double kS = 1; // Blackfrog_Setting 1.1890544370408778
+        public double kV = 0; // Blackfrog_Setting 0.00392616896265144
+        public double kA = 0.06; // Blackfrog_Setting 0.001995
 
         // path profile parameters (in inches)
         public double maxWheelVel = 50;
@@ -82,7 +95,7 @@ public final class MecanumDrive {
         public double maxAngAccel = Math.PI;
 
         // path controller gains
-        public double axialGain = 0.0000000001;
+        public double axialGain = 0.6;
         public double lateralGain = 0.0000000001;
         public double headingGain = 0.0000000001; // shared with turn
 
