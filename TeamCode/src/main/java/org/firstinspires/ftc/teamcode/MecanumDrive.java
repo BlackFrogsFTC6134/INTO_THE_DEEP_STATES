@@ -73,7 +73,7 @@ public final class MecanumDrive {
         public RevHubOrientationOnRobot.LogoFacingDirection logoFacingDirection =
                 RevHubOrientationOnRobot.LogoFacingDirection.UP; //Blackfrog_Setting for 2023 season
         public RevHubOrientationOnRobot.UsbFacingDirection usbFacingDirection =
-                RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD; //Blackfrog_Setting for 2023 season
+                RevHubOrientationOnRobot.UsbFacingDirection.FORWARD; //Blackfrog_Setting for 2023 season
 
         // drive model parameters
         public double inPerTick = 0.025297093986477; // Blackfrog_Setting. 141.24/5583.75 https://rr.brott.dev/docs/v1-0/tuning. Refer to ForwardPushTest
