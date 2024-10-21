@@ -33,7 +33,6 @@ import org.firstinspires.ftc.teamcode.tuning.TuningOpModes;
 public class BFR_TeleOp extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
-
         DcMotor leftFront;
         DcMotor leftBack;
         DcMotor rightFront;
@@ -62,16 +61,14 @@ public class BFR_TeleOp extends LinearOpMode {
         leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         Localizer localizer1;
-
         waitForStart();
-
-        while (opModeIsActive()){
+        while (opModeIsActive()) {
 
             X_movement = -gamepad1.left_stick_y;
             Y_movement = -gamepad1.left_stick_x;
-            drive1  = -gamepad1.left_stick_y  * 0.25;  // Reduce drive rate to 50%.
-            strafe = -gamepad1.left_stick_x  * 0.25;  // Reduce strafe rate to 50%.
-            turn   = -gamepad1.right_stick_x * (1/3);
+            drive1 = -gamepad1.left_stick_y * 0.25;  // Reduce drive rate to 50%.
+            strafe = -gamepad1.left_stick_x * 0.25;  // Reduce strafe rate to 50%.
+            turn = -gamepad1.right_stick_x * (1 / 3);
             if (TuningOpModes.DRIVE_CLASS.equals(MecanumDrive.class)) {
                 MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
 
@@ -85,12 +82,9 @@ public class BFR_TeleOp extends LinearOpMode {
                             ),
                             -gamepad1.right_stick_x
                     ));
+                }
+            }
+
         }
-
-
-
-    }
-
-}
     }
 }

@@ -24,8 +24,9 @@ public class DriveConstants {
      */
     public static final double TICKS_PER_REV = 537.6;
     public static final double MAX_RPM = 312;
-
+ //   public static final boolean RUN_USING_ENCODER = false; // true is using motor encoder. False if using odometry pods
     /*
+
      * Set RUN_USING_ENCODER to true to enable built-in hub velocity control using drive encoders.
      * Set this flag to false if drive encoders are not present and an alternative localization
      * method is in use (e.g., tracking wheels).
@@ -33,7 +34,8 @@ public class DriveConstants {
      * If using the built-in motor velocity PID, update MOTOR_VELO_PID with the tuned coefficients
      * from DriveVelocityPIDTuner.
      */
-    public static final boolean RUN_USING_ENCODER = true;
+    public static boolean RUN_USING_ENCODER = false;
+
     public static PIDFCoefficients MOTOR_VELO_PID = new PIDFCoefficients(0, 0, 0,
             getMotorVelocityF(MAX_RPM / 60 * TICKS_PER_REV));
 
@@ -55,9 +57,9 @@ public class DriveConstants {
      * motor encoders or have elected not to use them for velocity control, these values should be
      * empirically tuned.
      */
-    public static double kV = 1.0 / rpmToVelocity(MAX_RPM);
-    public static double kA = 0;
-    public static double kStatic = 0;
+    public static double kV = 0.03 / rpmToVelocity(MAX_RPM); //BlackFrog_Setting. Default 1/...
+    public static double kA = 0.0002;//BlackFrog_Setting. Default 0
+    public static double kStatic = 0.07686; //BlackFrog_Setting. Default 0
 
     /*
      * These values are used to generate the trajectories for you robot. To ensure proper operation,

@@ -32,12 +32,19 @@ package org.firstinspires.ftc.teamcode.TeleOp;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
+import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
+import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.arcrobotics.ftclib.controller.PIDController;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.MecanumDrive;
 import org.firstinspires.ftc.teamcode.tuning.TuningOpModes;
 
@@ -55,23 +62,24 @@ import org.firstinspires.ftc.teamcode.tuning.TuningOpModes;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@TeleOp(name="TeleOp", group="Linear OpMode")
+@TeleOp(name = "TeleOp", group = "Linear OpMode")
 
 public class BFR_TeleOp extends LinearOpMode {
 
-    // Declare OpMode members.
-
     private ElapsedTime runtime = new ElapsedTime();
-    private DcMotorEx Linear_Actuator = null;
-    private DcMotorEx Rotate_Actuator = null;
-    private DcMotorEx Linear_Viper = null;
-    private DcMotorEx Rotate_Viper = null;
-    public boolean Use_Motor_Encoder = false; // true is using motor encoder. False if using odometry pods
+    private DcMotorEx linearActuator = null;
+    private DcMotorEx rotateActuator = null;
+    private DcMotorEx viperSlideMotor = null;
+    private DcMotorEx rotateSlideMotor = null;
+
     // Setup a variable for each drive wheel to save power level for telemetry
-    double Linear_Actuator_Power;
-    double Rotate_Actuator_Power;
-    double Linear_Viper_Power;
-    double Rotate_Viper_Power;
+    double linearActuatorPower;
+    double rotateActuatorPower;
+    double viperSlideMotorPower;
+    double rotateSlideMotorPower;
+
+    private DistanceSensor sensorDistance;
+    Rev2mDistanceSensor sensorTimeOfFlight = (Rev2mDistanceSensor) sensorDistance;
 
     public static final double FULL_FIELD_INCHES = 141.24;
     public static final double HALF_FIELD_INCHES = FULL_FIELD_INCHES / 2.0;
@@ -81,13 +89,10 @@ public class BFR_TeleOp extends LinearOpMode {
     public static final double ROBOT_WIDTH = 18.0;
 
     public static final double DRIVE_SLOW_SCALE = 0.3;
-    public static final double DRIVE_NORMAL_SCALE = 0.5;
+    public static final double DRIVE_NORMAL_SCALE = 1.0;
     public static final double TURN_SLOW_SCALE = 0.3;
-    public static final double TURN_NORMAL_SCALE = 0.6;
+    public static final double TURN_NORMAL_SCALE = 1.0;
 
-    public static final double LINEAR_ACTUATOR_SLOW_SCALE = 0.7;
-    public static final double LINEAR_ACTUATOR_NORMAL_SCALE = 1.0;
-    public static boolean LINEAR_ACTUATOR_FULL_POWER = true;
 
     private PIDController LINEAR_VIPER_pidController;
 
@@ -95,12 +100,17 @@ public class BFR_TeleOp extends LinearOpMode {
     private static final double kI = 0.0;
     private static final double kD = 0.05;
 
+    public static final double LINEAR_ACTUATOR_SLOW_SCALE = 0.7;
+    public static final double LINEAR_ACTUATOR_NORMAL_SCALE = 1.0;
+    public static boolean LINEAR_ACTUATOR_FULL_POWER = true;
+
+
     public static final double ROTATE_ACTUATOR_SLOW_SCALE = 0.7;
     public static final double ROTATE_ACTUATOR_NORMAL_SCALE = 1.0;
     public static final boolean ROTATE_ACTUATOR_FULL_POWER = true;
 
-    public static final double LINEAR_VIPER_SLOW_SCALE = 0.7;
-    public static final double LINEAR_VIPER_NORMAL_SCALE = 1.0;
+    public static final double LINEAR_VIPER_SLOW_SCALE = 0.3;
+    public static final double LINEAR_VIPER_NORMAL_SCALE = 0.6;
     public static boolean LINEAR_VIPER_FULL_POWER = true;
 
     public static final double ROTATE_VIPER_SLOW_SCALE = 0.7;
@@ -113,17 +123,85 @@ public class BFR_TeleOp extends LinearOpMode {
     DcMotorEx rightFront;
     DcMotorEx rightBack;
 
-    double  X_movement;
-    double  Y_movement;
+    // Variables to track button states
+    private boolean lastAState = false;
+    private boolean lastBState = false;
 
-    double drive1 = 0;
-    double strafe = 0;
-    double turn = 0;
+    // Define a dead zone threshold to overcome stick drift
+    private static final double DEAD_ZONE_THRESHOLD = 0.1;
+    private double drive1;
+    private double strafe;
+    private double turn;
 
+    enum Mode {
+        DRIVER_CONTROL,
+        AUTOMATIC_CONTROL
+    }
+
+    // Define the target position and time limit
+    private static final int LINEAR_ACTUATOR_TARGET_POSITION_UP = 10; // Target position for moving up (in encoder ticks)
+    private static final int LINEAR_ACTUATOR_TARGET_POSITION_DOWN = 0;   // Target position for moving down (in encoder ticks)
+    private static final int LINEAR_VIPER_TARGET_POSITION_UP = 50; // Target position for moving up (in encoder ticks)
+    private static final int LINEAR_VIPER_TARGET_POSITION_DOWN = 0;   // Target position for moving down (in encoder ticks)
+
+    private static final int ROTATE_VIPER_TARGET_POSITION_UP = 100; // Target position for moving up (in encoder ticks)
+    private static final int ROTATE_VIPER_TARGET_POSITION_DOWN = 0;   // Target position for moving down (in encoder ticks)
+
+    private static final long SLIDE_TIME_UP  = 2000 ; // Time to move up in milliseconds
+    private static final long SLIDE_TIME_DOWN  = 2000; // Time to move down in milliseconds
+
+    Mode currentMode = Mode.DRIVER_CONTROL;
+
+    // The coordinates we want the bot to automatically go to when we press the A button
+    Vector2d targetAVector = new Vector2d(45, 45);
+    // The heading we want the bot to end on for targetA
+    double targetAHeading = Math.toRadians(90);
+
+    // Section to init claw and intake
+    // Declare the servos
+    private Servo clawServo;    // For opening and closing the claw
+    private Servo rotateServo;  // For rotating the claw
+
+    // Servo positions
+    private static final double CLAW_OPEN_POSITION = 0.0;   // Fully open position
+    private static final double CLAW_CLOSE_POSITION = 1.0;  // Fully closed position
+    //private static final double CLAW_ROTATE_LEFT_POSITION = 0.0;  // Rotate claw left
+    //private static final double CLAW_ROTATE_RIGHT_POSITION = 1.0; // Rotate claw right
+    //private static final double CLAW_ROTATE_CENTER_POSITION = 0.5; // Center position
+
+    private double integralClaw = 0;
+    private double previousErrorClaw = 0;
+    private ElapsedTime timer = new ElapsedTime();
 
     @Override
     public void runOpMode() throws InterruptedException {
 
+        initializeChassis();
+        initializeSubsystems();
+        initializeSubsystemsUsingEncoderDuringInit();
+        //     initializeSubsystemsWithoutEncoder();
+        //     initializeSubsystemsUsingPosition();
+
+        telemetry.addData("Status", "TeleOp Initialized");
+        telemetry.update();
+
+        // Go go BlackFrog robot! (driver presses START)
+        waitForStart();
+        runtime.reset();
+        initializeSubsystemsUsingEncoderAfterStart();
+
+        // run until the end of the match (driver presses STOP)
+        while (opModeIsActive() && !isStopRequested()) {
+            initializeSubsystemsUsingEncoderAfterStart();
+            handleGamePad1Inputs();
+            handleGamepad2Inputs();
+            updateMotorPowers();
+            updateTelemetryBeforeStart();
+        }
+    }
+
+    // Function to initialize chassis
+    private void initializeChassis() {
         leftFront = hardwareMap.get(DcMotorEx.class, "leftFront");
         leftBack = hardwareMap.get(DcMotorEx.class, "leftBack");
         rightFront = hardwareMap.get(DcMotorEx.class, "rightFront");
@@ -134,39 +212,20 @@ public class BFR_TeleOp extends LinearOpMode {
         rightFront.setDirection(DcMotorEx.Direction.FORWARD);
         rightBack.setDirection(DcMotorEx.Direction.FORWARD);
 
-        leftFront.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-        leftBack.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-        rightFront.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-        rightBack.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        /*
+        Zero Power Behavior: Set the zero power behavior of the motors to BRAKE or FLOAT
+        depending on your design requirements. BRAKE will hold the motors in place when no power is applied,
+        while FLOAT allows the motors to spin freely.
+        */
 
-        // Initialize the hardware variables. Note that the strings used here as parameters
-        // to 'get' must correspond to the names assigned during the robot configuration
-        // step (using the FTC Robot Controller app on the phone).
-        Linear_Actuator = hardwareMap.get(DcMotorEx.class, "Linear_Actuator");
-        Rotate_Actuator = hardwareMap.get(DcMotorEx.class, "Rotate_Actuator");
-        Linear_Viper = hardwareMap.get(DcMotorEx.class, "Linear_Viper");
-        Rotate_Viper = hardwareMap.get(DcMotorEx.class, "Rotate_Viper");
+        leftFront.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
+        leftBack.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
+        rightFront.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
+        rightBack.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.FLOAT);
 
-        // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
-        // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
-        // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
-        Linear_Actuator.setDirection(DcMotorEx.Direction.FORWARD);
-        Rotate_Actuator.setDirection(DcMotorEx.Direction.FORWARD);
-        Linear_Viper.setDirection(DcMotorEx.Direction.FORWARD);
-        Rotate_Viper.setDirection(DcMotorEx.Direction.FORWARD);
 
-        Linear_Actuator.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-        Rotate_Actuator.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-        Linear_Viper.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
-        Rotate_Viper.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
 
-        Linear_Actuator.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
-        Rotate_Actuator.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
-        Linear_Viper.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
-        Rotate_Viper.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
-        LINEAR_VIPER_pidController = new PIDController(kP, kI, kD);
-
-        if (Use_Motor_Encoder) {
+        if (DriveConstants.RUN_USING_ENCODER) {
             leftFront.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
             leftBack.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
             rightFront.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
@@ -178,92 +237,365 @@ public class BFR_TeleOp extends LinearOpMode {
             rightBack.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
         }
 
-        telemetry.addData("Status", "TeleOp Initialized");
+        // you can use this as a regular DistanceSensor.
+        sensorDistance = hardwareMap.get(DistanceSensor.class, "sensor_distance");
+
+        // you can also cast this to a Rev2mDistanceSensor if you want to use added
+        // methods associated with the Rev2mDistanceSensor class.
+
+    }
+
+    // Function to initialize subsystems (Arms & vipers)
+    private void initializeSubsystems() {
+        initializeActuator();
+        initializeViper();
+       // initializeClaw();
+        //initializeIntake();
+        //initializeHang();
+        //initializeHook();
+    }
+
+    private void initializeActuator() {
+        linearActuator = hardwareMap.get(DcMotorEx.class, "Linear_Actuator");
+        rotateActuator = hardwareMap.get(DcMotorEx.class, "Rotate_Actuator");
+
+        linearActuator.setDirection(DcMotorEx.Direction.FORWARD);
+        rotateActuator.setDirection(DcMotorEx.Direction.FORWARD);
+
+        linearActuator.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        rotateActuator.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+    }
+
+    private void initializeViper() {
+        viperSlideMotor = hardwareMap.get(DcMotorEx.class, "Linear_Viper");
+        rotateSlideMotor = hardwareMap.get(DcMotorEx.class, "Rotate_Viper");
+
+        viperSlideMotor.setDirection(DcMotorEx.Direction.REVERSE);
+        rotateSlideMotor.setDirection(DcMotorEx.Direction.FORWARD);
+
+        viperSlideMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        rotateSlideMotor.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+    }
+
+    private void initializeClaw() {
+        // Initialize claws. Additional configuration needed.
+        clawServo = hardwareMap.get(Servo.class, "clawServo");
+
+        // Set initial positions
+        clawServo.setPosition(CLAW_OPEN_POSITION);
+        telemetry.addLine(">> clawServo: Initialized");
+        telemetry.addData("clawServo Position: ", CLAW_OPEN_POSITION);
         telemetry.update();
+    }
 
-        // Wait for the game to start (driver presses START)
-        waitForStart();
-        runtime.reset();
+    private void initializeIntake() {
 
-        // run until the end of the match (driver presses STOP)
-        while (opModeIsActive()) {
+        // Initialize claws. Additional configuration needed.
 
-            X_movement = -gamepad1.left_stick_y * DRIVE_NORMAL_SCALE;
-            Y_movement = -gamepad1.left_stick_x * DRIVE_NORMAL_SCALE;
-            drive1 = -gamepad1.left_stick_y * DRIVE_NORMAL_SCALE;  // Reduce drive rate to 50%.
-            strafe = -gamepad1.left_stick_x * TURN_NORMAL_SCALE;  // Reduce strafe rate to 50%.
-            turn = -gamepad1.right_stick_x * TURN_NORMAL_SCALE;
-            if (TuningOpModes.DRIVE_CLASS.equals(MecanumDrive.class)) {
-                MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
-                telemetry.addData("Mecanum wheels driving", "");
+    }
 
-                waitForStart();
+    private void initializeHang() {
 
-                while (opModeIsActive()) {
-                    drive.setDrivePowers(new PoseVelocity2d(
-                            new Vector2d(
-                                    -gamepad1.left_stick_y * DRIVE_NORMAL_SCALE,
-                                    -gamepad1.left_stick_x * DRIVE_NORMAL_SCALE
-                            ),
-                            -gamepad1.right_stick_x * TURN_NORMAL_SCALE
-                    ));
+        // Initialize Hang. Additional configuration needed.
 
 
-                    if (LINEAR_ACTUATOR_FULL_POWER) {
-                        Linear_Actuator_Power = -gamepad2.left_stick_y * LINEAR_ACTUATOR_NORMAL_SCALE;
-                    } else {
-                        Linear_Actuator_Power = -gamepad2.left_stick_y * LINEAR_ACTUATOR_SLOW_SCALE;
-                    }
 
-                    if (ROTATE_ACTUATOR_FULL_POWER) {
-                        Rotate_Actuator_Power = gamepad2.left_stick_x * ROTATE_ACTUATOR_NORMAL_SCALE;
-                    } else {
-                        Rotate_Actuator_Power = gamepad2.left_stick_x * ROTATE_ACTUATOR_SLOW_SCALE;
-                    }
+    }
 
-                    if (LINEAR_VIPER_FULL_POWER) {
-                        Linear_Viper_Power = -gamepad2.right_stick_y * LINEAR_VIPER_NORMAL_SCALE;
-                    } else {
-                        Linear_Viper_Power = gamepad2.right_stick_y * LINEAR_VIPER_SLOW_SCALE;
-                    }
+    private void initializeHook() {
 
-                    if (ROTATE_VIPER_FULL_POWER) {
-                        Rotate_Viper_Power = gamepad2.right_stick_x * ROTATE_VIPER_NORMAL_SCALE;
-                    } else {
-                        Rotate_Viper_Power = gamepad2.right_stick_x * ROTATE_VIPER_SLOW_SCALE;
-                    }
+        // Initialize Hang. Additional configuration needed.
 
-                    if (gamepad2.dpad_up) {
-                        LINEAR_ACTUATOR_FULL_POWER = true;
-                    }
+    }
 
-                    if (gamepad2.dpad_down) {
-                        LINEAR_ACTUATOR_FULL_POWER = false;
-                    }
+        // Function to initialize subsystems Without Encoder
+    private void initializeSubsystemsWithoutEncoder() {
+        linearActuator.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        rotateActuator.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        viperSlideMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        rotateSlideMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+    }
 
-                    if (gamepad2.dpad_left) {
-                        LINEAR_VIPER_FULL_POWER = true;
-                    }
+    // Function to initialize subsystems UsingEncoder during initialization
+    private void initializeSubsystemsUsingEncoderDuringInit() {
+        linearActuator.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        rotateActuator.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        viperSlideMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        rotateSlideMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+    }
 
-                    if (gamepad2.dpad_right) {
-                        LINEAR_VIPER_FULL_POWER = false;
-                    }
+    // Function to initialize subsystems UsingEncoder after start
+    private void initializeSubsystemsUsingEncoderAfterStart() {
+        linearActuator.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+        rotateActuator.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+        viperSlideMotor.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+        rotateSlideMotor.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+    }
 
-                    // Send calculated power to wheels
-                    Linear_Actuator.setPower(Linear_Actuator_Power);
-                    Rotate_Actuator.setPower(Rotate_Actuator_Power);
-                    Rotate_Viper.setPower(Rotate_Viper_Power);
-                    Linear_Viper.setPower(Linear_Viper_Power);
+    // Function to initialize subsystems UsingEncoder
+    private void initializeSubsystemsUsingPosition() {
+        linearActuator.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+        rotateActuator.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+        viperSlideMotor.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+        rotateSlideMotor.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+    }
 
-                    // Show the elapsed game time and wheel power.
-                    telemetry.addData("Status", "Run Time: " + runtime.toString());
-                    telemetry.addData("Linear_Actuator_Power ", "(%.2f), Rotate_Actuator_Power (%.2f)", Linear_Actuator_Power, Rotate_Actuator_Power);
-                    telemetry.addData("Linear_Viper_Power", "(%.2f), Rotate_Viper_Power (%.2f)", Linear_Viper_Power, Rotate_Viper_Power);
-                    //telemetry.addData("Meacanum_Front", " left_Front (%.2f), right_Front (%.2f)", leftFront, rightFront);
-                    //telemetry.addData("Meacanum_Back", " left_Back (%.2f), right_Back (%.2f)", leftBack, rightBack);
-                    telemetry.update();
-                }
-            }
+    // Function to handle drive input from gamepad1
+    private void handleGamePad1Inputs() {
+        drive1 = applyDeadZone(-gamepad1.left_stick_y * DRIVE_NORMAL_SCALE);
+        strafe = applyDeadZone(-gamepad1.left_stick_x * DRIVE_NORMAL_SCALE);
+        turn = applyDeadZone(-gamepad1.right_stick_x * TURN_NORMAL_SCALE);
+
+        if (TuningOpModes.DRIVE_CLASS.equals(MecanumDrive.class)) {
+            MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
+            drive.setDrivePowers(new PoseVelocity2d(
+                    new Vector2d(
+                            drive1,
+                            strafe
+                    ),
+                    turn
+            ));
         }
     }
+
+    // Function to handle manipulator input from gamepad2
+    private void handleGamepad2Inputs() {
+        rotateActuatorPower = applyDeadZone(-gamepad2.left_stick_y * (ROTATE_ACTUATOR_FULL_POWER ? ROTATE_ACTUATOR_NORMAL_SCALE: ROTATE_ACTUATOR_SLOW_SCALE));
+        linearActuatorPower = applyDeadZone(gamepad2.left_stick_x * ( LINEAR_ACTUATOR_FULL_POWER? LINEAR_ACTUATOR_NORMAL_SCALE : LINEAR_ACTUATOR_SLOW_SCALE));
+
+        rotateSlideMotorPower = applyDeadZone(-gamepad2.right_stick_y * (ROTATE_VIPER_FULL_POWER ? ROTATE_VIPER_NORMAL_SCALE : ROTATE_VIPER_SLOW_SCALE));
+        viperSlideMotorPower = gamepad2.right_stick_x * (LINEAR_VIPER_FULL_POWER ? LINEAR_VIPER_NORMAL_SCALE : LINEAR_VIPER_SLOW_SCALE);
+
+        if (gamepad2.dpad_up) {
+            LINEAR_ACTUATOR_FULL_POWER = true;
+            telemetry.addData("Setting linear viper power to ", "FULL POWER");
+            telemetry.update();
+        } else if (gamepad2.dpad_down) {
+            LINEAR_ACTUATOR_FULL_POWER = false;
+            telemetry.addData("Setting linear viper power to ", "REDUCED POWER");
+            telemetry.update();
+        }
+
+        if (gamepad2.dpad_left) {
+            LINEAR_VIPER_FULL_POWER = true;
+            telemetry.addData("Setting viper power to ", "FULL POWER");
+            telemetry.update();
+        } else if (gamepad2.dpad_right) {
+            LINEAR_VIPER_FULL_POWER = false;
+            telemetry.addData("Setting viper power to ", "REDUCED POWER");
+            telemetry.update();
+        }
+
+        // Control to move the linear actuator down (select either Position control or time control)
+        if (gamepad2.b) {
+            moveViperToPosition(LINEAR_VIPER_TARGET_POSITION_DOWN);
+            //     moveForSpecifiedTime(SLIDE_TIME_DOWN);
+        }
+        // Control to move the slide down
+        if (gamepad2.x) {
+            moveViperToPosition(LINEAR_VIPER_TARGET_POSITION_UP);
+            //     moveForSpecifiedTime(SLIDE_TIME_DOWN);
+        }
+
+        // Control to move the linear actuator up (select either Position control or time control)
+        if (gamepad2.a) {
+            moveLinearActuatorToPosition(LINEAR_ACTUATOR_TARGET_POSITION_DOWN);
+            //     moveForSpecifiedTime(SLIDE_TIME_DOWN);
+        }
+
+        if (gamepad2.y) {
+            moveLinearActuatorToPosition(LINEAR_ACTUATOR_TARGET_POSITION_UP);
+            //  moveForSpecifiedTime(SLIDE_TIME_UP)
+        }
+    }
+
+    // Function to update motor power values
+    private void updateMotorPowers() {
+        linearActuator.setPower(linearActuatorPower);
+        rotateActuator.setPower(rotateActuatorPower);
+        rotateSlideMotor.setPower(rotateSlideMotorPower);
+        viperSlideMotor.setPower(viperSlideMotorPower);
+    }
+
+    private void updateTelemetryBeforeStart() {
+        telemetry.addLine("Robot Status after start: ")
+                .addData(">> RUN_USING_ENCODER?: ", String.valueOf(DriveConstants.RUN_USING_ENCODER));
+
+        telemetry.addLine(">> Robot Arms Status: ")
+                 .addData(">> Linear actuator power: ", "%.2f", linearActuatorPower)
+                 .addData(">> Linear actuator position (ticks/rev): ", linearActuator.getCurrentPosition())
+                 .addData(">> Linear actuator UP target: ", LINEAR_ACTUATOR_TARGET_POSITION_UP)
+                 .addData(">> Linear actuator DOWN target: ", LINEAR_ACTUATOR_TARGET_POSITION_DOWN)
+
+                 .addData(">> Rotate actuator power: ", "%.2f", rotateActuatorPower)
+                 .addData(">> Rotate actuator position (ticks/rev): ", viperSlideMotor.getCurrentPosition())
+
+                 .addData(">> Linear viper power: ", "%.2f", viperSlideMotorPower)
+                 .addData(">> Linear viper position (ticks/rev): ", "%.2f", viperSlideMotorPower)
+                .addData(">> Linear viper UP target: ", LINEAR_VIPER_TARGET_POSITION_UP)
+                .addData(">> Linear viper DOWN target: ", LINEAR_VIPER_TARGET_POSITION_DOWN)
+
+                 .addData(">> Rotate viper power: ", "%.2f", rotateSlideMotorPower)
+                 .addData(">> Rotate viper position (ticks/rev):", "%.2f", rotateSlideMotorPower)
+                 .addData(">> Rotate viper UP target: ", ROTATE_VIPER_TARGET_POSITION_UP)
+                .addData(">> Rotate viper DOWN target: ", ROTATE_VIPER_TARGET_POSITION_DOWN);
+
+        telemetry.update();
+    }
+    // Function to update telemetry data
+    private void updateTelemetryAfterStart() {
+        telemetry.addLine("Robot Status after start: ");
+        telemetry.addData("Run Time: ", runtime.toString());
+
+        telemetry.addData(">> drive1: ", "%.2f", drive1);
+        telemetry.addData(">> Strafe: ", "%.2f", strafe);
+        telemetry.addData(">> Turn: ", "%.2f", turn);
+
+        telemetry.addData(">> Robot Arms Status", ":");
+        telemetry.addData(">> Linear actuator power: ", "%.2f", linearActuatorPower);
+        telemetry.addData(">> Linear actuator position (ticks/rev): ", "%.2f", linearActuator.getCurrentPosition());
+
+        telemetry.addData(">> Rotate actuator power: ", "%.2f", rotateActuatorPower);
+        telemetry.addData(">> Rotate actuator position (ticks/rev): ", rotateActuator.getCurrentPosition());
+
+        telemetry.addData(">> Linear viper power: ", "%.2f", viperSlideMotorPower);
+        telemetry.addData(">> Linear viper position(ticks/rev) : ", "%.2f", rotateActuatorPower);
+
+        telemetry.addData(">> Rotate viper power: ", "%.2f", rotateSlideMotorPower);
+        telemetry.addData(">> Rotate viper position (ticks/rev): ", rotateSlideMotor.getCurrentPosition());
+
+        // Show joystick information as some other illustrative data
+        telemetry.addLine("left joystick | ")
+                .addData("x", gamepad1.left_stick_x)
+                .addData("y", gamepad1.left_stick_y);
+        telemetry.addLine("right joystick | ")
+                .addData("x", gamepad1.right_stick_x)
+                .addData("y", gamepad1.right_stick_y);
+
+        telemetry.addData("deviceName", sensorDistance.getDeviceName() );
+        telemetry.addData("range", String.format("%.01f in", sensorDistance.getDistance(DistanceUnit.INCH)));
+
+        // Rev2mDistanceSensor specific methods.
+        telemetry.addData("ID", String.format("%x", sensorTimeOfFlight.getModelID()));
+        telemetry.addData("did time out", Boolean.toString(sensorTimeOfFlight.didTimeoutOccur()));
+        telemetry.update();
+    }
+
+    // Function to move the linear actuator to the specified position
+    private void moveLinearActuatorToPosition(int targetPosition) {
+        linearActuator.setTargetPosition(targetPosition);
+        linearActuator.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+
+        // Set power to the motor
+        linearActuator.setPower(LINEAR_VIPER_FULL_POWER ? LINEAR_VIPER_NORMAL_SCALE : LINEAR_VIPER_SLOW_SCALE); // Set power to full (you can adjust this as needed)
+
+        // Wait until the motor reaches the target position
+        while (opModeIsActive() &&
+                (linearActuator.isBusy())) {
+            telemetry.addData(">> Moving linear actuator to position: ", targetPosition);
+            telemetry.addData(">> Current linear actuator position: ", linearActuator.getCurrentPosition());
+            telemetry.update();
+            // Optionally, you can add more code here, such as monitoring the power levels or other feedback
+        }
+
+        // Stop the motor
+        linearActuator.setPower(0);
+
+        // Set back to RUN_USING_ENCODER mode
+        linearActuator.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        linearActuator.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+    }
+
+    // Function to move the viper to the specified position
+    private void moveViperToPosition(int targetPosition) {
+        viperSlideMotor.setTargetPosition(targetPosition);
+
+        // Set power to the motor
+        //viperSlideMotor.setPower(LINEAR_VIPER_FULL_POWER ? LINEAR_VIPER_NORMAL_SCALE : LINEAR_VIPER_SLOW_SCALE); // Set power to full (you can adjust this as needed)
+        viperSlideMotor.setPower(viperSlideMotorPower); // Set power to full (you can adjust this as needed)
+        viperSlideMotor.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+
+        // Wait until the motor reaches the target position
+        while (viperSlideMotor.getCurrentPosition() <= targetPosition) {
+            telemetry.addData(">> Moving viper to position: ", targetPosition);
+            telemetry.addData(">> Current viper position: ", viperSlideMotor.getCurrentPosition());
+            telemetry.update();
+            // Optionally, you can add more code here, such as monitoring the power levels or other feedback
+        }
+
+        // Stop the motor
+        //viperSlideMotor.setPower(0);
+
+        // Set back to RUN_USING_ENCODER mode
+        viperSlideMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        viperSlideMotor.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+    }
+
+    // Function to move the slide within the specified time
+    private void moveLinearActuatorForSpecifiedTime(long targetTime) {
+
+        // Set power to the motor
+        viperSlideMotor.setPower(LINEAR_VIPER_FULL_POWER ? LINEAR_VIPER_NORMAL_SCALE : LINEAR_VIPER_SLOW_SCALE); // Set power to full (you can adjust this as needed)
+
+        telemetry.addData(">> Moving viper until specified time", targetTime);
+        telemetry.addData(">> Current viper Position", viperSlideMotor.getCurrentPosition());
+        telemetry.update();
+
+        sleep(targetTime);
+
+        // Stop the motor
+        viperSlideMotor.setPower(0);
+    }
+
+    private void openClaw() {
+        setClawPosition(CLAW_OPEN_POSITION);
+    }
+
+    private void closeClaw() {
+        setClawPosition(CLAW_CLOSE_POSITION);
+    }
+
+    private void setClawPosition(double position) {
+        clawServo.setPosition(position);
+       // rightClawServo.setPosition(1 - position); // Assuming right servo is mirrored
+    }
+
+    public void operateClaw(Gamepad gamepad) {
+        if (gamepad.right_bumper) {
+            closeClaw();
+        } else if (gamepad.left_bumper) {
+            openClaw();
+        }
+
+        // Use right trigger for fine control of claw position
+        double targetPosition = gamepad.right_trigger * (CLAW_OPEN_POSITION - CLAW_CLOSE_POSITION) + CLAW_CLOSE_POSITION;
+        setClawPositionWithPID(targetPosition);
+    }
+
+    private void setClawPositionWithPID(double targetPosition) {
+        double currentPosition = clawServo.getPosition();
+        double error = targetPosition - currentPosition;
+
+        double dt = timer.seconds();
+        timer.reset();
+
+        integralClaw += error * dt;
+        double derivative = (error - previousErrorClaw) / dt;
+
+        double output = kP * error + kI * integralClaw + kD * derivative;
+
+        setClawPosition(currentPosition + output);
+
+        previousErrorClaw = error;
+    }
+    // Function to apply dead zone filtering
+    private double applyDeadZone(double value) {
+        // If the joystick input is smaller than the dead zone threshold, set it to 0
+        if (Math.abs(value) < DEAD_ZONE_THRESHOLD) {
+            return 0.0;
+        }
+        // Otherwise, return the original value
+        return value;
+    }
 }
+

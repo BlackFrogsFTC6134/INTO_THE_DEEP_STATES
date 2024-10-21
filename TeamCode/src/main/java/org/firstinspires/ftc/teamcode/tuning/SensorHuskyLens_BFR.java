@@ -113,7 +113,7 @@ public class SensorHuskyLens_BFR extends LinearOpMode {
          *
          * Other algorithm choices for FTC might be: OBJECT_RECOGNITION, COLOR_RECOGNITION or OBJECT_CLASSIFICATION.
          */
-        huskyLens.selectAlgorithm(HuskyLens.Algorithm.OBJECT_CLASSIFICATION); // Blackfrog_setting
+        huskyLens.selectAlgorithm(HuskyLens.Algorithm.COLOR_RECOGNITION); // Blackfrog_setting
 
         telemetry.update();
         waitForStart();
