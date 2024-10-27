@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.drive;
 
 import androidx.annotation.NonNull;
 
@@ -34,10 +34,10 @@ import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
@@ -51,22 +51,17 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.firstinspires.ftc.teamcode.ThreeDeadWheelLocalizer;
+import org.firstinspires.ftc.teamcode.util.ThreeDeadWheelLocalizer;
 
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_ACCEL;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_ANG_ACCEL;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_ANG_VEL;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_VEL;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MOTOR_VELO_PID;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.RUN_USING_ENCODER;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.TRACK_WIDTH;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.encoderTicksToInches;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kA;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kStatic;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kV;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.USE_DEAD_WHEEL_ODOMETRY;
+
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 
 // FTC dashboard http://192.168.43.1:8080/dash
+// Example MecanumDrive - https://github.com/NoahBres/road-runner-quickstart/blob/advanced-examples/TeamCode/src/main/java/org/firstinspires/ftc/teamcode/drive/SampleMecanumDrive.java
+
 @Config
 public final class MecanumDrive {
     public static class Params {
@@ -79,7 +74,7 @@ public final class MecanumDrive {
                 RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD; //Blackfrog_Setting for 2023 season
 
         // drive model parameters
-        public double inPerTick = 0.025297093986477; // Blackfrog_Setting. 141.24/5583.75 https://rr.brott.dev/docs/v1-0/tuning. Refer to ForwardPushTest
+        public double inPerTick = 0.00590301348838582096160089725805; // Blackfrog_Setting. 141.24/5583.75 https://rr.brott.dev/docs/v1-0/tuning. Refer to ForwardPushTest
         public double lateralInPerTick = inPerTick; // Blackfrog_Setting https://rr.brott.dev/docs/v1-0/tuning. Refer to LateralPushTest
         public double trackWidthTicks = 35.320744330791776; // Blackfrog_Setting https://rr.brott.dev/docs/v1-0/tuning. Refer to either Drive Encoders or Dead Wheels section
 
@@ -112,8 +107,8 @@ public final class MecanumDrive {
     private static final String[] MOTOR_NAMES = {
             "leftFront",
             "leftBack",
-            "rightBack",
-            "rightFront"
+            "rightFront",
+            "rightBack"
     };
 
     private enum Side {
@@ -121,7 +116,6 @@ public final class MecanumDrive {
         LEFT
     }
     public static Side REVERSE_SIDE = Side.RIGHT; //Blackfrog_Setting. https://github.com/Tech-Syndicate-FTC/PowerPlay/blob/main/TeamCode/src/main/java/org/firstinspires/ftc/teamcode/subsystems/drivetrain/MecanumBase.java
-
 
     public final MecanumKinematics kinematics = new MecanumKinematics(
             PARAMS.inPerTick * PARAMS.trackWidthTicks, PARAMS.inPerTick / PARAMS.lateralInPerTick);
@@ -265,28 +259,28 @@ public final class MecanumDrive {
         //   see https://ftc-docs.firstinspires.org/en/latest/hardware_and_software_configuration/configuring/index.html
         leftFront = hardwareMap.get(DcMotorEx.class, MOTOR_NAMES[0]);
         leftBack = hardwareMap.get(DcMotorEx.class, MOTOR_NAMES[1]);
-        rightBack = hardwareMap.get(DcMotorEx.class, MOTOR_NAMES[2]);
-        rightFront = hardwareMap.get(DcMotorEx.class, MOTOR_NAMES[3]);
+        rightFront = hardwareMap.get(DcMotorEx.class, MOTOR_NAMES[2]);
+        rightBack = hardwareMap.get(DcMotorEx.class, MOTOR_NAMES[3]);
 
         switch (REVERSE_SIDE) {
             case RIGHT: {
                 // TODO: reverse encoders if needed
                 leftFront.setDirection(DcMotorEx.Direction.REVERSE); // Blackfrog_Setting. If you’re using drive encoders, the ticks recorded should increase in a positive direction.
                 leftBack.setDirection(DcMotorEx.Direction.REVERSE); // Blackfrog_Setting. If you’re using drive encoders, the ticks recorded should increase in a positive direction.
-                rightBack.setDirection(DcMotorEx.Direction.FORWARD); // Blackfrog_Setting. If you’re using drive encoders, the ticks recorded should increase in a positive direction.
                 rightFront.setDirection(DcMotorEx.Direction.FORWARD); // Blackfrog_Setting. If you’re using drive encoders, the ticks recorded should increase in a positive direction.
+                rightBack.setDirection(DcMotorEx.Direction.FORWARD); // Blackfrog_Setting. If you’re using drive encoders, the ticks recorded should increase in a positive direction.
                 break;
             }
             case LEFT: {
                 leftFront.setDirection(DcMotorEx.Direction.FORWARD); // Blackfrog_Setting. If you’re using drive encoders, the ticks recorded should increase in a positive direction.
                 leftBack.setDirection(DcMotorEx.Direction.FORWARD); // Blackfrog_Setting. If you’re using drive encoders, the ticks recorded should increase in a positive direction.
-                rightBack.setDirection(DcMotorEx.Direction.REVERSE); // Blackfrog_Setting. If you’re using drive encoders, the ticks recorded should increase in a positive direction.
                 rightFront.setDirection(DcMotorEx.Direction.REVERSE); // Blackfrog_Setting. If you’re using drive encoders, the ticks recorded should increase in a positive direction.
+                rightBack.setDirection(DcMotorEx.Direction.REVERSE); // Blackfrog_Setting. If you’re using drive encoders, the ticks recorded should increase in a positive direction.
                 break;
             }
         }
 
-        motors = Arrays.asList(leftFront, leftBack, rightBack, rightFront);
+        motors = Arrays.asList(leftFront, leftBack, rightFront, rightBack);
 
         for (DcMotorEx motor : motors) {
             MotorConfigurationType motorConfigurationType = motor.getMotorType().clone();
@@ -294,11 +288,21 @@ public final class MecanumDrive {
             motor.setMotorType(motorConfigurationType);
         }
 
-        if (RUN_USING_ENCODER) {
-            setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        if(USE_DEAD_WHEEL_ODOMETRY){
+            RUN_USING_ENCODER = false; //Blackfrog_Setting. False if using deadwheel odometry
         }
 
-        setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        if (RUN_USING_ENCODER) {
+            setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        } else {
+            setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER); //Blackfrog_Setting.
+        }
+
+        setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT); //Blackfrog_Setting.
+
+        if (RUN_USING_ENCODER && MOTOR_VELO_PID != null) { //Blackfrog_Setting.
+            setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, MOTOR_VELO_PID);
+        }
 
         // TODO: make sure your config has an IMU with this name (can be BNO or BHI)
         //   see https://ftc-docs.firstinspires.org/en/latest/hardware_and_software_configuration/configuring/index.html
@@ -307,8 +311,8 @@ public final class MecanumDrive {
 
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
 
-        localizer = new DriveLocalizer();
-        //localizer = new ThreeDeadWheelLocalizer(hardwareMap, PARAMS.inPerTick);
+        //localizer = new DriveLocalizer();
+        localizer = new ThreeDeadWheelLocalizer(hardwareMap, PARAMS.inPerTick);
 
         FlightRecorder.write("MECANUM_PARAMS", PARAMS);
     }
@@ -317,15 +321,15 @@ public final class MecanumDrive {
         MecanumKinematics.WheelVelocities<Time> wheelVels = new MecanumKinematics(1).inverse(
                 PoseVelocity2dDual.constant(powers, 1));
 
-        double maxPowerMag = 0.8; // Blackfrog_setting. This was 1
+        double maxPowerMag = 1.0; // Blackfrog_setting. This was 1
         for (DualNum<Time> power : wheelVels.all()) {
             maxPowerMag = Math.max(maxPowerMag, power.value());
         }
 
         leftFront.setPower(wheelVels.leftFront.get(0) / maxPowerMag);
         leftBack.setPower(wheelVels.leftBack.get(0) / maxPowerMag);
-        rightBack.setPower(wheelVels.rightBack.get(0) / maxPowerMag);
         rightFront.setPower(wheelVels.rightFront.get(0) / maxPowerMag);
+        rightBack.setPower(wheelVels.rightBack.get(0) / maxPowerMag);
     }
 
     public final class FollowTrajectoryAction implements Action {
@@ -395,8 +399,8 @@ public final class MecanumDrive {
 
             leftFront.setPower(leftFrontPower);
             leftBack.setPower(leftBackPower);
-            rightBack.setPower(rightBackPower);
             rightFront.setPower(rightFrontPower);
+            rightBack.setPower(rightBackPower);
 
             p.put("x", pose.position.x);
             p.put("y", pose.position.y);
@@ -454,8 +458,8 @@ public final class MecanumDrive {
             if (t >= turn.duration) {
                 leftFront.setPower(0);
                 leftBack.setPower(0);
-                rightBack.setPower(0);
                 rightFront.setPower(0);
+                rightBack.setPower(0);
 
                 return false;
             }
@@ -486,8 +490,8 @@ public final class MecanumDrive {
 
             leftFront.setPower(feedforward.compute(wheelVels.leftFront) / voltage);
             leftBack.setPower(feedforward.compute(wheelVels.leftBack) / voltage);
-            rightBack.setPower(feedforward.compute(wheelVels.rightBack) / voltage);
             rightFront.setPower(feedforward.compute(wheelVels.rightFront) / voltage);
+            rightBack.setPower(feedforward.compute(wheelVels.rightBack) / voltage);
 
             Canvas c = p.fieldOverlay();
             drawPoseHistory(c);
@@ -567,6 +571,34 @@ public final class MecanumDrive {
     public void setZeroPowerBehavior(DcMotor.ZeroPowerBehavior zeroPowerBehavior) {
         for (DcMotorEx motor : motors) {
             motor.setZeroPowerBehavior(zeroPowerBehavior);
+        }
+    }
+
+    /*
+    public Action followTrajectory(Trajectory t) {
+        return new followTrajectory()
+    }
+
+    public Action turn(double angle) {
+       // return new TodoAction();
+    }
+
+    public Action moveToPoint(double x, double y) {
+       // return new TodoAction();
+    }
+
+    public SleepAction SleepDrive(double sleepTime) {
+        return new TodoAction();
+    }
+*/
+    public void setPIDFCoefficients(DcMotor.RunMode runMode, PIDFCoefficients coefficients) {
+        PIDFCoefficients compensatedCoefficients = new PIDFCoefficients(
+                coefficients.p, coefficients.i, coefficients.d,
+                coefficients.f * 12 / voltageSensor.getVoltage()
+        );
+
+        for (DcMotorEx motor : motors) {
+            motor.setPIDFCoefficients(runMode, compensatedCoefficients);
         }
     }
 }
