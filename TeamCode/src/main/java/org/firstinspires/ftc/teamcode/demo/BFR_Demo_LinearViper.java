@@ -43,8 +43,14 @@ public class BFR_Demo_LinearViper extends LinearOpMode {
         linearViper.setPower(linearViperPower);
         rotateViper.setPower(rotateViperPower);
 
+        linearViper.setVelocity(100);
+        rotateViper.setVelocity(100);
+
         linearViper.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         rotateViper.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+
+        linearViper.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+        rotateViper.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
 
         telemetry.addLine(">> linear & rotate vipers: Initialized");
         telemetry.addData("LINEAR_VIPER_POWER", (LINEAR_VIPER_FULL_POWER ? LINEAR_VIPER_NORMAL_SCALE : LINEAR_VIPER_SLOW_SCALE));
@@ -107,7 +113,7 @@ public class BFR_Demo_LinearViper extends LinearOpMode {
         }
 
         // Stop all motion
-       // linearViper.setPower(0);
+       linearViper.setPower(0);
 
         // Reset motor mode
         linearViper.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);

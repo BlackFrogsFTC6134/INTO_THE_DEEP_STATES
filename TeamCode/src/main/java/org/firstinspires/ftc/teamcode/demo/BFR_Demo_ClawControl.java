@@ -27,45 +27,33 @@ public class BFR_Demo_ClawControl extends LinearOpMode {
         telemetry.addData("Claw Position ", CLAW_OPEN_POSITION);
         telemetry.addData("gamepad2.left_bumper", "Opens The claw");
         telemetry.addData("gamepad2.right_bumper", "Closes the claw");
-        telemetry.addData("gamepad2.right_trigger", "Fine control the claw");
+       // telemetry.addData("gamepad2.right_trigger", "Fine control the claw");
         telemetry.update();
 
         waitForStart();
         if(isStopRequested()) return;
 
         while (opModeIsActive()) {
-            /*
+
             if (gamepad2.right_bumper) {
                 closeClaw();
             } else if (gamepad2.left_bumper) {
                 openClaw();
             }
-*/
+/*
             // Optionally, use triggers for fine control
             double triggerPosition = gamepad2.right_trigger * (CLAW_OPEN_POSITION - CLAW_CLOSED_POSITION) + CLAW_CLOSED_POSITION;
             clawServo.setPosition(triggerPosition);
-
+*/
             telemetry.addData("Claw Position", clawServo.getPosition());
-
-            //telemetry.addData("gamepad2.left_bumper", "Opens The claw");
-            //telemetry.addData("gamepad2.right_bumper", "Closes the claw");
-            telemetry.addData("gamepad2.right_trigger", "Fine control the claw");
-            telemetry.update();
-            telemetry.update();
         }
     }
 
     private void openClaw() {
         clawServo.setPosition(CLAW_OPEN_POSITION);
-        while (clawServo.getPosition() < CLAW_OPEN_POSITION) {
-            sleep(SERVO_MOVE_DELAY_MS);  // Allow time for servo to reach position
-        }
     }
 
     private void closeClaw() {
         clawServo.setPosition(CLAW_CLOSED_POSITION);
-        while (clawServo.getPosition() > CLAW_OPEN_POSITION) {
-            sleep(SERVO_MOVE_DELAY_MS);  // Allow time for servo to reach position
-        }
     }
 }

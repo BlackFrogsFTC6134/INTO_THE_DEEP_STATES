@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.demo;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -45,8 +46,14 @@ public class BFR_Demo_LinearActuator extends LinearOpMode {
         linearActuator.setPower(0);
         rotateActuator.setPower(0);
 
+        linearActuator.setVelocity(100);
+        rotateActuator.setVelocity(0);
+
         linearActuator.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         rotateActuator.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+
+        linearActuator.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+        rotateActuator.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
 
         telemetry.addLine(">> linear & rotate actuators: Initialized");
         telemetry.addData("ROTATE_ACTUATOR_POWER", (ROTATE_ACTUATOR_FULL_POWER ? ROTATE_ACTUATOR_NORMAL_SCALE: ROTATE_ACTUATOR_SLOW_SCALE));
@@ -104,7 +111,7 @@ public class BFR_Demo_LinearActuator extends LinearOpMode {
         }
 
         // Stop all motion
-        //linearActuator.setPower(0);
+        linearActuator.setPower(0);
 
         // Reset motor mode
         linearActuator.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);

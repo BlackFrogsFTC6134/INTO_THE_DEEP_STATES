@@ -35,8 +35,8 @@ public class BFR_Demo_ViperSlideHoldPosition extends LinearOpMode {
         linearViper.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         rotateViper.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
 
-        //  rotateViper.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-        //rotateViper.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+        linearViper.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+        rotateViper.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
 
         telemetry.addData("Status", "Linear & rotate viper motors initialized");
         telemetry.addData("gamepad2.b", "Viper goes to extended position");
@@ -78,6 +78,8 @@ public class BFR_Demo_ViperSlideHoldPosition extends LinearOpMode {
         }
 
         // Stop the motor once the target is reached
-        //linearViper.setPower(0);
+        linearViper.setPower(0);
+
+        linearViper.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
     }
 }
