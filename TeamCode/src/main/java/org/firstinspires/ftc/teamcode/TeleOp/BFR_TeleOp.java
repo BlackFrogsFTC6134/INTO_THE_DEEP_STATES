@@ -761,6 +761,7 @@ public class BFR_TeleOp extends LinearOpMode {
         linearViper.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
     }
 
+
     // Function to move the slide within the specified time
     private void moveLinearViperForSpecifiedTime(long targetTime) {
         // Set power to the motor
