@@ -238,7 +238,7 @@ public class BFR_TeleOp extends LinearOpMode {
         while (opModeIsActive() && !isStopRequested()) {
             updateTelemetryAfterStart();
             //handleDistanceSensors();
-            //handleDigitalInputs();
+            handleDigitalInputs();
             handleGamePad1Inputs();
             handleGamepad2Inputs();
             updateSubsystemsMotorPower();
@@ -471,7 +471,7 @@ public class BFR_TeleOp extends LinearOpMode {
             linearActuator.setPower(0);
             rotateActuator.setPower(0);
         }
-        if (rotateViperDistance > 4.1) {
+        if (rotateViperDistance > 4.1 && rotateViperDistance < 6.0) {
             if (gamepad2.b) {
                 moveLinearViperToPosition(LINEAR_VIPER_TARGET_POSITION_DOWN);
             }
@@ -489,7 +489,7 @@ public class BFR_TeleOp extends LinearOpMode {
 
         }
         rotateViperDistance = sensorDistance.getDistance((DistanceUnit.INCH));
-         if (rotateViperDistance > 1.5 && rotateViperDistance < 4.9) {
+         if (rotateViperDistance > 1.5 && rotateViperDistance < 4.1) {
             if (gamepad2.x) {
                 moveLinearViperToPosition(LINEAR_VIPER_TARGET_POSITION_UP);
             }
@@ -498,6 +498,24 @@ public class BFR_TeleOp extends LinearOpMode {
 
             }
         }
+
+         if (touchSensor1.isPressed()) {
+             rotateViperPower = applyDeadZone(-gamepad2.right_stick_x * (ROTATE_VIPER_FULL_POWER ? ROTATE_VIPER_NORMAL_SCALE: ROTATE_VIPER_SLOW_SCALE));
+            if (gamepad2.x) {
+                moveLinearViperToPosition(LINEAR_VIPER_TARGET_POSITION_UP);
+
+            }
+            if (gamepad2.b) {
+                moveLinearViperToPosition(LINEAR_VIPER_TARGET_POSITION_DOWN);
+
+            }
+
+         }
+         if (!touchSensor1.isPressed()){
+            rotateViper.setPower(0); //TODO
+            linearViper.setPower(0);
+        }
+
 
         if (gamepad2.x) {
             if (linearActuator.getCurrentPosition() > 50) {
@@ -592,12 +610,9 @@ public class BFR_TeleOp extends LinearOpMode {
 
     private void handleDigitalInputs(){
         // button is pressed if value returned is LOW or false.
-        if (touchSensor1.isPressed()){
-          //  rotateActuator.setPower(0); //TODO
-        }
-        if (touchSensor2.isPressed()){
+
             //  rotateViper.setPower(0); //TODO
-        }
+
         if (touchSensor3.isPressed()){
         //TODO
         }
