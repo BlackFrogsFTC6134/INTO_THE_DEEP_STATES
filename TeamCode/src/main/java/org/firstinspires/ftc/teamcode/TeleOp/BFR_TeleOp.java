@@ -498,7 +498,7 @@ public class BFR_TeleOp extends LinearOpMode {
 
             }
         }
-
+/*
          if (touchSensor1.isPressed()) {
              rotateViperPower = applyDeadZone(-gamepad2.right_stick_x * (ROTATE_VIPER_FULL_POWER ? ROTATE_VIPER_NORMAL_SCALE: ROTATE_VIPER_SLOW_SCALE));
             if (gamepad2.x) {
@@ -510,11 +510,11 @@ public class BFR_TeleOp extends LinearOpMode {
 
             }
 
-         }
-         if (!touchSensor1.isPressed()){
+         } */
+        /* if (!touchSensor1.isPressed()){
             rotateViper.setPower(0); //TODO
             linearViper.setPower(0);
-        }
+        } */
 
 
         if (gamepad2.x) {
