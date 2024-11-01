@@ -43,8 +43,8 @@ public class BFR_Demo_LinearViper extends LinearOpMode {
         linearViper.setPower(linearViperPower);
         rotateViper.setPower(rotateViperPower);
 
-        linearViper.setVelocity(100);
-        rotateViper.setVelocity(100);
+        //linearViper.setVelocity(100);
+        //rotateViper.setVelocity(100);
 
         linearViper.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         rotateViper.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);

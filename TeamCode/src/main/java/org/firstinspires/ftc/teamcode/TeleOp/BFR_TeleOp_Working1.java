@@ -34,17 +34,16 @@ import android.view.View;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
+import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
+import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.arcrobotics.ftclib.controller.PIDController;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
@@ -65,9 +64,9 @@ import org.firstinspires.ftc.teamcode.tuning.TuningOpModes;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@TeleOp(name = "TeleOp", group = "TeleOp")
+@TeleOp(name = "TeleOp_Working 1", group = "TeleOp")
 
-public class BFR_TeleOp extends LinearOpMode {
+public class BFR_TeleOp_Working1 extends LinearOpMode {
 
     private final ElapsedTime runtime = new ElapsedTime();
     private DcMotorEx linearActuator = null;
@@ -237,10 +236,10 @@ public class BFR_TeleOp extends LinearOpMode {
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive() && !isStopRequested()) {
             updateTelemetryAfterStart();
-            //handleDistanceSensors();
-            //handleDigitalInputs();
             handleGamePad1Inputs();
             handleGamepad2Inputs();
+            handleDistanceSensors();
+            handleDigitalInputs();
             updateSubsystemsMotorPower();
         }
     }
@@ -315,9 +314,6 @@ public class BFR_TeleOp extends LinearOpMode {
         linearActuator = hardwareMap.get(DcMotorEx.class, "Linear_Actuator");
         rotateActuator = hardwareMap.get(DcMotorEx.class, "Rotate_Actuator");
 
-        linearActuator.setPower(linearActuatorPower);
-        rotateActuator.setPower(rotateActuatorPower);
-
         linearActuator.setDirection(DcMotorEx.Direction.FORWARD);
         rotateActuator.setDirection(DcMotorEx.Direction.FORWARD);
 
@@ -329,6 +325,9 @@ public class BFR_TeleOp extends LinearOpMode {
 
         linearActuator.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         rotateActuator.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+
+        linearActuator.setPower(linearActuatorPower);
+        rotateActuator.setPower(rotateActuatorPower);
 
         telemetry.addLine(">> linear & rotate actuators: Initialized");
         telemetry.update();
@@ -457,75 +456,47 @@ public class BFR_TeleOp extends LinearOpMode {
         if (gamepad1.dpad_down) {
 
         }
+
+        //linearActuatorPower = applyDeadZone( gamepad1.left_stick_x * ( LINEAR_ACTUATOR_FULL_POWER? LINEAR_ACTUATOR_NORMAL_SCALE : LINEAR_ACTUATOR_SLOW_SCALE));
+        //rotateActuatorPower = applyDeadZone(-gamepad1.left_stick_y * (ROTATE_ACTUATOR_FULL_POWER ? ROTATE_ACTUATOR_NORMAL_SCALE: ROTATE_ACTUATOR_SLOW_SCALE));
+
     }
 
     // Function to handle manipulator input from gamepad2
     private void handleGamepad2Inputs() {
+        /*
+        if(-gamepad2.right_stick_y > 0){
+            linearViperPower = 1;
+        } else if (-gamepad2.right_stick_y < 0) {
+            linearViperPower = -1;
+        } else if (gamepad2.right_stick_y == 0) {
+            linearViperPower = 0;
+        }
+        */
 
         //linearViperPower = applyDeadZone(-gamepad2.right_stick_y * (LINEAR_VIPER_FULL_POWER ? LINEAR_VIPER_NORMAL_SCALE : LINEAR_VIPER_SLOW_SCALE));
+        rotateViperPower = applyDeadZone( gamepad2.right_stick_x * (ROTATE_VIPER_FULL_POWER ? ROTATE_VIPER_NORMAL_SCALE : ROTATE_VIPER_SLOW_SCALE));
 
         rotateViperDistance = sensorDistance.getDistance((DistanceUnit.INCH));
-        if (rotateViperDistance > 4.5  || linearViper.getCurrentPosition() > 60) {
-            //rotateActuatorPower = 0;
-            //linearActuatorPower = 0;
-            linearActuator.setPower(0);
-            rotateActuator.setPower(0);
+        if (rotateViperDistance > 3.2 && rotateViperDistance < 15.0) {
+            rotateActuatorPower = 0;
+            telemetry.addLine("We are disabling the actuator");
         }
-        if (rotateViperDistance > 4.1) {
-            if (gamepad2.b) {
-                moveLinearViperToPosition(LINEAR_VIPER_TARGET_POSITION_DOWN);
-            }
-
-            if (gamepad2.x) {
-                moveLinearViperToPosition(LINEAR_VIPER_TARGET_POSITION_UP_LIMITED);
-            }
-        } else if ((rotateViperDistance > 1.5 && rotateViperDistance < 4.0) && linearViper.getCurrentPosition() < 50) {
+        else if (rotateViperDistance > 30) {
             rotateActuatorPower = applyDeadZone(-gamepad2.left_stick_x * (ROTATE_ACTUATOR_FULL_POWER ? ROTATE_ACTUATOR_NORMAL_SCALE: ROTATE_ACTUATOR_SLOW_SCALE));
-            linearActuatorPower = applyDeadZone( -gamepad2.left_stick_y * ( LINEAR_ACTUATOR_FULL_POWER? LINEAR_ACTUATOR_NORMAL_SCALE : LINEAR_ACTUATOR_SLOW_SCALE));
-
-            linearViper.setPower(linearViperPower);
-            rotateViper.setPower(rotateViperPower);
+            linearActuatorPower = applyDeadZone( -gamepad1.left_stick_y * ( LINEAR_ACTUATOR_FULL_POWER? LINEAR_ACTUATOR_NORMAL_SCALE : LINEAR_ACTUATOR_SLOW_SCALE));
             telemetry.addLine("We are free to move the actuator");
 
         }
-        rotateViperDistance = sensorDistance.getDistance((DistanceUnit.INCH));
-         if (rotateViperDistance > 1.5 && rotateViperDistance < 4.9) {
-            if (gamepad2.x) {
-                moveLinearViperToPosition(LINEAR_VIPER_TARGET_POSITION_UP);
-            }
-            else if (gamepad2.b) {
-                moveLinearViperToPosition(LINEAR_VIPER_TARGET_POSITION_DOWN);
-
-            }
-        }
-
-        if (gamepad2.x) {
-            if (linearActuator.getCurrentPosition() > 50) {
-                //rotateViperPower = 0;
-                rotateViper.setPower(0);
-                moveLinearViperToPosition(0);
-                telemetry.addLine("We are limiting the viper slide");
-            }
-            else if (gamepad2.b) {
-                //rotateViperPower = 0;
-                rotateViper.setPower(0);
-                moveLinearViperToPosition(LINEAR_VIPER_TARGET_POSITION_DOWN);
-            }
-        }   else if (linearActuator.getCurrentPosition() < 45) {
-            rotateViperPower = applyDeadZone(-gamepad2.right_stick_x * (ROTATE_VIPER_FULL_POWER ? ROTATE_VIPER_NORMAL_SCALE: ROTATE_VIPER_SLOW_SCALE));
-            rotateViper.setPower(rotateViperPower);
-
-            if (gamepad2.x) {
-                moveLinearViperToPosition(LINEAR_VIPER_TARGET_POSITION_UP);
-            }
-            if (gamepad2.b) {
-                moveLinearViperToPosition(LINEAR_VIPER_TARGET_POSITION_DOWN);
-                }
-
-        }
-
         linearViper.setPower(linearViperPower);
         rotateViper.setPower(rotateViperPower);
+
+        if (gamepad2.dpad_up) {
+            moveLinearActuatorToPosition(LINEAR_ACTUATOR_TARGET_POSITION_UP);
+        }
+        if (gamepad2.dpad_down) {
+            moveLinearActuatorToPosition(LINEAR_ACTUATOR_TARGET_POSITION_DOWN);
+        }
 
         if (gamepad2.dpad_left) {
            //rotateActuatorPower = applyDeadZone(-gamepad2.left_stick_y * (ROTATE_ACTUATOR_FULL_POWER ? ROTATE_ACTUATOR_NORMAL_SCALE: ROTATE_ACTUATOR_SLOW_SCALE));
@@ -534,6 +505,31 @@ public class BFR_TeleOp extends LinearOpMode {
 
         if (gamepad2.dpad_right) {
             //rotateActuatorToPosition(ROTATE_ACTUATOR_TARGET_POSITION_DOWN);
+        }
+
+        // Control to move the linear actuator down (select either Position control or time control)
+        if (gamepad2.b) {
+            moveLinearViperToPosition(LINEAR_VIPER_TARGET_POSITION_DOWN);
+        }
+        // Control to move the viper up
+        if (gamepad2.x) {
+            rotateViperDistance = sensorDistance.getDistance((DistanceUnit.INCH));
+            if (rotateViperDistance > 3.2 ) {
+                moveLinearViperToPosition(LINEAR_VIPER_TARGET_POSITION_UP_LIMITED);
+                telemetry.addLine("We are limiting the viper slide");
+            }
+            else if (rotateViperDistance < 3.0) {
+                moveLinearViperToPosition(LINEAR_VIPER_TARGET_POSITION_UP);
+                telemetry.addLine("We are not limiting the viper slide");
+            }
+
+
+           // moveLinearViperToPosition(LINEAR_VIPER_TARGET_POSITION_UP);
+           // calculateViperPID(LINEAR_VIPER_TARGET_POSITION_UP);
+           // calculateViperPID(LINEAR_VIPER_TARGET_POSITION_UP);
+            //moveLinearViperToPosition(LINEAR_VIPER_TARGET_POSITION_UP);
+
+
         }
 
         // Control to move the linear actuator up (select either Position control or time control)
@@ -709,15 +705,11 @@ public class BFR_TeleOp extends LinearOpMode {
             telemetry.update();
         }
 
-        // Stop all motion
-        linearActuator.setPower(0);
-
-        if(targetPosition == LINEAR_ACTUATOR_TARGET_POSITION_DOWN){
-            linearActuator.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-        }
-
         // Reset motor mode
         linearActuator.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+
+        // Stop all motion
+        linearActuator.setPower(0);
     }
 
     // Function to move the rotate actuator to the specified position
@@ -741,8 +733,8 @@ public class BFR_TeleOp extends LinearOpMode {
     }
 
     private void moveRotateViperToPosition(int targetPosition) {
-        rotateViper.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
         rotateViper.setTargetPosition(targetPosition);
+        rotateViper.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
         rotateViper.setPower(ROTATE_VIPER_FULL_POWER ? ROTATE_VIPER_NORMAL_SCALE : ROTATE_VIPER_SLOW_SCALE); // Set power to full (you can adjust this as needed)
 
         while (opModeIsActive() && rotateViper.isBusy()) {
@@ -790,7 +782,7 @@ public class BFR_TeleOp extends LinearOpMode {
         telemetry.update();
 
         while (opModeIsActive() && linearViper.isBusy()) {
-            idle();
+            sleep(10);
         }
 
         // Stop the motor
