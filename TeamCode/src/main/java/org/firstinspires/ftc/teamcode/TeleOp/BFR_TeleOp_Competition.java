@@ -1,32 +1,3 @@
-/* Copyright (c) 2017 FIRST. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted (subject to the limitations in the disclaimer below) provided that
- * the following conditions are met:
- *
- * Redistributions of source code must retain the above copyright notice, this list
- * of conditions and the following disclaimer.
- *
- * Redistributions in binary form must reproduce the above copyright notice, this
- * list of conditions and the following disclaimer in the documentation and/or
- * other materials provided with the distribution.
- *
- * Neither the name of FIRST nor the names of its contributors may be used to endorse or
- * promote products derived from this software without specific prior written permission.
- *
- * NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE GRANTED BY THIS
- * LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
- * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
 package org.firstinspires.ftc.teamcode.TeleOp;
 
 import android.view.View;
@@ -51,20 +22,7 @@ import org.firstinspires.ftc.teamcode.drive.MecanumDrive;
 import org.firstinspires.ftc.teamcode.tuning.TuningOpModes;
 
 
-/*
- * This file contains an minimal example of a Linear "OpMode". An OpMode is a 'program' that runs in either
- * the autonomous or the teleop period of an FTC match. The names of OpModes appear on the menu
- * of the FTC Driver Station. When a selection is made from the menu, the corresponding OpMode
- * class is instantiated on the Robot Controller and executed.
- *
- * This particular OpMode just executes a basic Tank Drive Teleop for a two wheeled robot
- * It includes all the skeletal structure that all linear OpModes contain.
- *
- * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
- * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
- */
-
-@TeleOp(name = "Competition_TeleOp", group = "TeleOp")
+@TeleOp(name = "BFR_TeleOp_Competition", group = "TeleOp")
 
 public class BFR_TeleOp_Competition extends LinearOpMode {
 
@@ -104,10 +62,10 @@ public class BFR_TeleOp_Competition extends LinearOpMode {
     public static final double ROBOT_LENGTH = 17.5;
     public static final double ROBOT_WIDTH = 18.0;
 
-    public static final double DRIVE_SLOW_SCALE = 0.4;
-    public static final double DRIVE_NORMAL_SCALE = 0.6;
-    public static final double TURN_SLOW_SCALE = 0.4;
-    public static final double TURN_NORMAL_SCALE = 0.6;
+    public static final double DRIVE_SLOW_SCALE = 0.6;
+    public static final double DRIVE_NORMAL_SCALE = 0.7;
+    public static final double TURN_SLOW_SCALE = 0.6;
+    public static final double TURN_NORMAL_SCALE = 0.7;
 
     private PIDController LINEAR_VIPER_pidController;
 
@@ -188,7 +146,7 @@ public class BFR_TeleOp_Competition extends LinearOpMode {
 
     // Servo positions
     private PIDController pidController;
-    private static final double CLAW_OPEN_POSITION = 1.0;   // Fully open position, (ready to pick sample)
+    private static final double CLAW_OPEN_POSITION = 0.7;   // Fully open position, (ready to pick sample)
     private static final double CLAW_CLOSED_POSITION = 0.0;  // Fully closed position, (holding sample)
     private static final double RETRACT_HOOK_DOWN_POSITION = -1.0;   // Fully open position, (ready to pick sample)
     private static final double RAISE_HOOK_UP_POSITION = 1.0;  // Fully closed position, (holding sample)
@@ -254,6 +212,11 @@ public class BFR_TeleOp_Competition extends LinearOpMode {
         leftBack = hardwareMap.get(DcMotorEx.class, "leftBack");
         rightFront = hardwareMap.get(DcMotorEx.class, "rightFront");
         rightBack = hardwareMap.get(DcMotorEx.class, "rightBack");
+
+        leftFront.setPower(0);
+        leftBack.setPower(0);
+        rightFront.setPower(0);
+        rightBack.setPower(0);
 
         leftFront.setDirection(DcMotorEx.Direction.REVERSE);
         leftBack.setDirection(DcMotorEx.Direction.REVERSE);
@@ -341,6 +304,9 @@ public class BFR_TeleOp_Competition extends LinearOpMode {
         linearViper = hardwareMap.get(DcMotorEx.class, "Linear_Viper");
         rotateViper = hardwareMap.get(DcMotorEx.class, "Rotate_Viper");
 
+        linearViper.setPower(linearViperPower);
+        rotateViper.setPower(rotateViperPower);
+
         linearViper.setDirection(DcMotorEx.Direction.REVERSE);
         rotateViper.setDirection(DcMotorEx.Direction.FORWARD);
 
@@ -353,9 +319,6 @@ public class BFR_TeleOp_Competition extends LinearOpMode {
         //linearViper.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         linearViper.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         rotateViper.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
-
-        linearViper.setPower(linearViperPower);
-        rotateViper.setPower(rotateViperPower);
 
         //LINEAR_VIPER_TARGET_POSITION_DOWN = linearViper.getCurrentPosition();
         //ROTATE_VIPER_TARGET_POSITION_DOWN = rotateViper.getCurrentPosition();
@@ -537,9 +500,9 @@ public class BFR_TeleOp_Competition extends LinearOpMode {
             }
 */
 
-            linearViper.setPower(linearViperPower);
-            //rotateViper.setPower(rotateViperPower);
-            rotateViper.setPower(0);
+            //linearViper.setPower(linearViperPower);
+            rotateViper.setPower(rotateViperPower);
+            //rotateViper.setPower(0);
 
             if (gamepad2.dpad_left) {
                 //rotateActuatorPower = applyDeadZone(-gamepad2.left_stick_y * (ROTATE_ACTUATOR_FULL_POWER ? ROTATE_ACTUATOR_NORMAL_SCALE: ROTATE_ACTUATOR_SLOW_SCALE));
