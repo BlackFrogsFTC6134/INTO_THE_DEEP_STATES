@@ -34,17 +34,16 @@ import android.view.View;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
+import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
+import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.arcrobotics.ftclib.controller.PIDController;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
@@ -65,9 +64,9 @@ import org.firstinspires.ftc.teamcode.tuning.TuningOpModes;
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
  */
 
-@TeleOp(name = "TeleOp", group = "TeleOp")
+@TeleOp(name = "Competition_TeleOp", group = "TeleOp")
 
-public class BFR_TeleOp extends LinearOpMode {
+public class BFR_TeleOp_Competition extends LinearOpMode {
 
     private final ElapsedTime runtime = new ElapsedTime();
     private DcMotorEx linearActuator = null;
@@ -582,12 +581,16 @@ public class BFR_TeleOp extends LinearOpMode {
             // Optionally, use triggers for fine control
             //intakeRotationServoPosition = gamepad2.right_stick_x;
             //intakeRotationServo.setPosition(intakeRotationServoPosition);
-        } else if (currentteleOp == teleOpMode.HANGING) {
-            rotateActuatorPower = applyDeadZone(-gamepad2.left_stick_y * (ROTATE_ACTUATOR_FULL_POWER ? ROTATE_ACTUATOR_NORMAL_SCALE : ROTATE_ACTUATOR_SLOW_SCALE));
-            linearActuatorPower = applyDeadZone(gamepad2.right_stick_x * (LINEAR_ACTUATOR_FULL_POWER ? LINEAR_ACTUATOR_NORMAL_SCALE : LINEAR_ACTUATOR_SLOW_SCALE));
+        }
+        else if (currentteleOp == teleOpMode.HANGING) {
+            rotateViperDistance = sensorDistance.getDistance((DistanceUnit.INCH));
+            if (rotateViperDistance > 0.5 && rotateViperDistance < 3.7) {
+                rotateActuatorPower = applyDeadZone(-gamepad2.left_stick_y * (ROTATE_ACTUATOR_FULL_POWER ? ROTATE_ACTUATOR_NORMAL_SCALE : ROTATE_ACTUATOR_SLOW_SCALE));
+                linearActuatorPower = applyDeadZone(gamepad2.right_stick_x * (LINEAR_ACTUATOR_FULL_POWER ? LINEAR_ACTUATOR_NORMAL_SCALE : LINEAR_ACTUATOR_SLOW_SCALE));
 
-            rotateActuator.setPower(rotateActuatorPower);
-            linearActuator.setPower(linearActuatorPower);
+                rotateActuator.setPower(rotateActuatorPower);
+                linearActuator.setPower(linearActuatorPower);
+            }
         }
     }
 
