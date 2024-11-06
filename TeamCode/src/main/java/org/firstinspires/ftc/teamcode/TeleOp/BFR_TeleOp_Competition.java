@@ -554,6 +554,10 @@ public class BFR_TeleOp_Competition extends LinearOpMode {
                 rotateActuator.setPower(rotateActuatorPower);
                 linearActuator.setPower(linearActuatorPower);
             }
+           else if (rotateViperDistance > 4.1 && rotateViperDistance < 7.9) {
+               rotateActuator.setPower(0);
+               linearActuator.setPower(0);
+            }
         }
     }
 

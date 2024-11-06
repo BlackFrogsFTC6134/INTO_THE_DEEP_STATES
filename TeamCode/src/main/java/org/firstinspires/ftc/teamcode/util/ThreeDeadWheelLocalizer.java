@@ -43,8 +43,8 @@ public final class ThreeDeadWheelLocalizer implements Localizer {
         //   see https://ftc-docs.firstinspires.org/en/latest/hardware_and_software_configuration/configuring/index.html
         // change par0 par1 and perp to the names of  the motor that the encoder wire is next to
         par0 = new OverflowEncoder(new RawEncoder(hardwareMap.get(DcMotorEx.class, "leftFront"))); //Blackfrog_Setting. Motor Port 0
-        par1 = new OverflowEncoder(new RawEncoder(hardwareMap.get(DcMotorEx.class, "rightFront"))); //Blackfrog_Setting. Motor port 3
-        perp = new OverflowEncoder(new RawEncoder(hardwareMap.get(DcMotorEx.class, "rightBack"))); //Blackfrog_Setting. Motor port 2
+        par1 = new OverflowEncoder(new RawEncoder(hardwareMap.get(DcMotorEx.class, "rightBack"))); //Blackfrog_Setting. Motor port 3
+        perp = new OverflowEncoder(new RawEncoder(hardwareMap.get(DcMotorEx.class, "rightFront"))); //Blackfrog_Setting. Motor port 2
 
         // TODO: reverse encoder directions if needed
            par0.setDirection(DcMotorEx.Direction.REVERSE);

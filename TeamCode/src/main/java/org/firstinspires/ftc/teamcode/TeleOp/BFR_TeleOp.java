@@ -36,7 +36,6 @@ import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -143,9 +142,9 @@ public class BFR_TeleOp extends LinearOpMode {
 
     // Define a dead zone threshold to overcome stick drift
     private static final double DEAD_ZONE_THRESHOLD = 0.01;
-    private double drive1 = 0;
-    private double strafe = 0;
-    private double turn = 0;
+    private double DRIVE_SPEED = 0;
+    private double TURN_SPEED = 0;
+    private double STRAFE_SPEED = 0;
 
     enum Mode {
         DRIVER_CONTROL,
@@ -419,35 +418,35 @@ public class BFR_TeleOp extends LinearOpMode {
     // Function to handle drive input from gamepad1
     private void handleGamePad1Inputs() {
         if (gamepad1.dpad_left) {
-            drive1 = applyDeadZone(gamepad1.left_stick_y * DRIVE_SLOW_SCALE);
-            strafe = applyDeadZone(gamepad1.left_stick_x * DRIVE_SLOW_SCALE);
-            turn = applyDeadZone(gamepad1.right_stick_x * TURN_SLOW_SCALE);
+            DRIVE_SPEED = applyDeadZone(gamepad1.left_stick_y * DRIVE_SLOW_SCALE);
+            STRAFE_SPEED = applyDeadZone(gamepad1.left_stick_x * DRIVE_SLOW_SCALE);
+            TURN_SPEED = applyDeadZone(gamepad1.right_stick_x * TURN_SLOW_SCALE);
 
             if (TuningOpModes.DRIVE_CLASS.equals(MecanumDrive.class)) {
                 MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
                 drive.setDrivePowers(new PoseVelocity2d(
                         new Vector2d(
-                                drive1,
-                                strafe
+                                DRIVE_SPEED,
+                                STRAFE_SPEED
                         ),
-                        turn
+                        TURN_SPEED
                 ));
             }
         }
 
         else {
-            drive1 = applyDeadZone(gamepad1.left_stick_y * DRIVE_NORMAL_SCALE);
-            strafe = applyDeadZone(gamepad1.left_stick_x * DRIVE_NORMAL_SCALE);
-            turn = applyDeadZone(gamepad1.right_stick_x * TURN_NORMAL_SCALE);
+            DRIVE_SPEED = applyDeadZone(gamepad1.left_stick_y * DRIVE_NORMAL_SCALE);
+            STRAFE_SPEED = applyDeadZone(gamepad1.left_stick_x * DRIVE_NORMAL_SCALE);
+            TURN_SPEED = applyDeadZone(gamepad1.right_stick_x * TURN_NORMAL_SCALE);
 
             if (TuningOpModes.DRIVE_CLASS.equals(MecanumDrive.class)) {
                 MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0, 0, 0));
                 drive.setDrivePowers(new PoseVelocity2d(
                         new Vector2d(
-                                drive1,
-                                strafe
+                                DRIVE_SPEED,
+                                STRAFE_SPEED
                         ),
-                        turn
+                        TURN_SPEED
                 ));
             }
         }
@@ -671,9 +670,9 @@ public class BFR_TeleOp extends LinearOpMode {
         telemetry.addLine("Robot Status after start ");
         telemetry.addData("Run Time ", runtime.toString());
 
-        telemetry.addData(">> drive1 ", "%.2f", drive1);
-        telemetry.addData(">> Strafe ", "%.2f", strafe);
-        telemetry.addData(">> Turn:", "%.2f", turn);
+        telemetry.addData(">> drive1 ", "%.2f", DRIVE_SPEED);
+        telemetry.addData(">> Strafe ", "%.2f", STRAFE_SPEED);
+        telemetry.addData(">> Turn:", "%.2f", TURN_SPEED);
         telemetry.addData(">> currentteleOp:",currentteleOp);
 
         telemetry.addLine("***************");
