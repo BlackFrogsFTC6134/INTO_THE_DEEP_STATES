@@ -538,8 +538,8 @@ public class BFR_TeleOp extends LinearOpMode {
 */
 
             linearViper.setPower(linearViperPower);
-            //rotateViper.setPower(rotateViperPower);
-            rotateViper.setPower(0);
+            rotateViper.setPower(rotateViperPower);
+            //rotateViper.setPower(0);
 
             if (gamepad2.dpad_left) {
                 //rotateActuatorPower = applyDeadZone(-gamepad2.left_stick_y * (ROTATE_ACTUATOR_FULL_POWER ? ROTATE_ACTUATOR_NORMAL_SCALE: ROTATE_ACTUATOR_SLOW_SCALE));

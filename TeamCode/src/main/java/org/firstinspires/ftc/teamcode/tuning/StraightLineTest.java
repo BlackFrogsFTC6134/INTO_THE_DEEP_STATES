@@ -20,10 +20,10 @@ public class StraightLineTest extends LinearOpMode {
     private Servo continuousIntakeServo1;
     @Override
     public void runOpMode() {
-        MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0,0,0));
+        MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(0,0,Math.toRadians(90))); //Blackfrog_Setting
 
         // Define the starting pose of the robot
-        Pose2d startPose = new Pose2d(0, 0, 0);
+        Pose2d startPose = new Pose2d(0, 0, Math.toRadians(90)); //Blackfrog_Setting
 
         // Create a trajectory to move forward by 24 inches
         TrajectoryActionBuilder tab1 = drive.actionBuilder(drive.pose)
@@ -33,11 +33,11 @@ public class StraightLineTest extends LinearOpMode {
         Action TrajectoryAction1 = drive.actionBuilder(drive.pose)
                 .lineToY(10)
                 .build();
-
+/*
         Action TrajectoryAction2 = drive.actionBuilder(new Pose2d(15,20,0))
                 .splineTo(new Vector2d(15,20), Math.toRadians(90))
                 .build();
-
+*/
         // Initialize claws. Additional configuration needed.
         continuousIntakeServo1 = hardwareMap.get(Servo.class, "clawServo");
 
@@ -58,16 +58,16 @@ public class StraightLineTest extends LinearOpMode {
                                 telemetry.addLine("Action 1");
                                 telemetry.update();
                                 return false; // Returning true causes the action to run again, returning false causes it to cease
-                            },
+                            },/*
                             new ParallelAction( // several actions being run in parallel
-                                    TrajectoryAction2, // Run second trajectory
+                                   // TrajectoryAction2, // Run second trajectory
                                     (telemetryPacket) -> { // Run some action
                                         continuousIntakeServo1.setPosition(0);
                                         continuousIntakeServo1.setPosition(1);
                                         continuousIntakeServo1.setPosition(0);
                                         return false;
                                     }
-                            ),
+                            ),*/
                             drive.actionBuilder(new Pose2d(15,10,Math.toRadians(125))) // Another way of running a trajectory (not recommended because trajectories take time to build and will slow down your code, always try to build them beforehand)
                                     .splineTo(new Vector2d(25, 15), 0)
                                     .build()
