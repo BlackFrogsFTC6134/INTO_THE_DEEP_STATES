@@ -1,8 +1,6 @@
-package org.firstinspires.ftc.teamcode.demo;
+package org.firstinspires.ftc.teamcode.states.demo;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 @TeleOp(name="BFR_Demo_ViperSlideHoldPosition", group="Demo")

@@ -24,7 +24,7 @@
         TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
         THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-package org.firstinspires.ftc.teamcode.LEDStrip;
+package org.firstinspires.ftc.teamcode.states.LEDStrip;
 
 /*
  * This OpMode illustrates how to use the REV Digital Indicator

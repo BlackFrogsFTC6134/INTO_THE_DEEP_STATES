@@ -27,23 +27,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode.TeleOp;
+package org.firstinspires.ftc.teamcode.states.util;
 
 import android.view.View;
 
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.PoseVelocity2d;
 import com.acmerobotics.roadrunner.Vector2d;
+import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
+import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.arcrobotics.ftclib.controller.PIDController;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
@@ -66,8 +66,9 @@ import org.firstinspires.ftc.teamcode.tuning.TuningOpModes;
 
 @TeleOp(name = "TeleOp", group = "TeleOp")
 
-public class BFR_TeleOp extends LinearOpMode {
+public class BFR_TeleOp_states extends LinearOpMode {
 
+    private static double LINEAR_VIPER_STARTING_POSITION;
     private final ElapsedTime runtime = new ElapsedTime();
     private DcMotorEx linearActuator = null;
     private DcMotorEx rotateActuator = null;
@@ -162,9 +163,9 @@ public class BFR_TeleOp extends LinearOpMode {
     private static int ROTATE_ACTUATOR_TARGET_POSITION_UP = 100; // Target position for moving up (in encoder ticks)
     private static int ROTATE_ACTUATOR_TARGET_POSITION_DOWN = 0;   // Target position for moving down (in encoder ticks)
 
-    private int LINEAR_VIPER_TARGET_POSITION_UP = 2000; // Target position for moving up (in encoder ticks)
-    private int LINEAR_VIPER_TARGET_POSITION_UP_LIMITED = 800; // Target position for moving up (in encoder ticks)
-    private int LINEAR_VIPER_TARGET_POSITION_DOWN = 0;   // Target position for moving down (in encoder ticks)
+    private int LINEAR_VIPER_TARGET_POSITION_UP; // Target position for moving up (in encoder ticks)
+    private int LINEAR_VIPER_TARGET_POSITION_UP_LIMITED; // Target position for moving up (in encoder ticks)
+    private int LINEAR_VIPER_TARGET_POSITION_DOWN;   // Target position for moving down (in encoder ticks)
 
     private static int ROTATE_VIPER_TARGET_POSITION_UP = 300; // Target position for moving up (in encoder ticks)
     private static int ROTATE_VIPER_TARGET_POSITION_DOWN = 0;   // Target position for moving down (in encoder ticks)
@@ -236,6 +237,8 @@ public class BFR_TeleOp extends LinearOpMode {
 
         runtime.reset();
         if (isStopRequested()) return;
+
+        LINEAR_VIPER_STARTING_POSITION = linearViper.getCurrentPosition();
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive() && !isStopRequested()) {
@@ -493,6 +496,8 @@ public class BFR_TeleOp extends LinearOpMode {
 
             }
 
+
+
     /*
              if (touchSensor1.isPressed()) {
                  rotateViperPower = applyDeadZone(-gamepad2.right_stick_x * (ROTATE_VIPER_FULL_POWER ? ROTATE_VIPER_NORMAL_SCALE: ROTATE_VIPER_SLOW_SCALE));
@@ -589,6 +594,21 @@ public class BFR_TeleOp extends LinearOpMode {
             linearActuator.setPower(linearActuatorPower);
         }
     }
+
+    public void handlePID() {
+            double viperSlideError= LINEAR_VIPER_TARGET_POSITION_UP - (linearViper.getCurrentPosition() - LINEAR_VIPER_STARTING_POSITION) * 360/384.5;
+
+            double slide = 0.05 * viperSlideError;
+
+            if (slide > 1) {
+                slide = 1;
+            }
+            if (slide < -1){
+                slide = -1;
+            }
+    }
+
+    //linearViper.setPower(1.0);
 
     private void handleDistanceSensors(){
  /*       if (sensorDistance.getDistance(DistanceUnit.INCH) < SAFE_DISTANCE_FROM_PERIMETER){

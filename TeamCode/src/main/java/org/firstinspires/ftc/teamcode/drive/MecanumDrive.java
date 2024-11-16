@@ -1,11 +1,17 @@
-package org.firstinspires.ftc.teamcode.drive;
+package org.firstinspires.ftc.teamcode.states.drive;
+
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MOTOR_VELO_PID;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.RUN_USING_ENCODER;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.USE_DEAD_WHEEL_ODOMETRY;
 
 import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
-import com.acmerobotics.roadrunner.*;
+import com.acmerobotics.roadrunner.AccelConstraint;
+import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.Actions;
 import com.acmerobotics.roadrunner.AngularVelConstraint;
 import com.acmerobotics.roadrunner.DualNum;
 import com.acmerobotics.roadrunner.HolonomicController;
@@ -14,13 +20,20 @@ import com.acmerobotics.roadrunner.MinVelConstraint;
 import com.acmerobotics.roadrunner.MotorFeedforward;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.Pose2dDual;
+import com.acmerobotics.roadrunner.PoseVelocity2d;
+import com.acmerobotics.roadrunner.PoseVelocity2dDual;
 import com.acmerobotics.roadrunner.ProfileAccelConstraint;
+import com.acmerobotics.roadrunner.ProfileParams;
+import com.acmerobotics.roadrunner.Rotation2d;
 import com.acmerobotics.roadrunner.Time;
 import com.acmerobotics.roadrunner.TimeTrajectory;
 import com.acmerobotics.roadrunner.TimeTurn;
 import com.acmerobotics.roadrunner.TrajectoryActionBuilder;
+import com.acmerobotics.roadrunner.TrajectoryBuilderParams;
 import com.acmerobotics.roadrunner.TurnConstraints;
 import com.acmerobotics.roadrunner.Twist2dDual;
+import com.acmerobotics.roadrunner.Vector2d;
+import com.acmerobotics.roadrunner.Vector2dDual;
 import com.acmerobotics.roadrunner.VelConstraint;
 import com.acmerobotics.roadrunner.ftc.DownsampledWriter;
 import com.acmerobotics.roadrunner.ftc.Encoder;
@@ -34,11 +47,11 @@ import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
-import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
+import com.qualcomm.robotcore.hardware.VoltageSensor;
+import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
@@ -46,19 +59,11 @@ import org.firstinspires.ftc.teamcode.messages.DriveCommandMessage;
 import org.firstinspires.ftc.teamcode.messages.MecanumCommandMessage;
 import org.firstinspires.ftc.teamcode.messages.MecanumLocalizerInputsMessage;
 import org.firstinspires.ftc.teamcode.messages.PoseMessage;
+import org.firstinspires.ftc.teamcode.states.util.ThreeDeadWheelLocalizer;
 
-import java.lang.Math;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-
-import org.firstinspires.ftc.teamcode.util.ThreeDeadWheelLocalizer;
-
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MOTOR_VELO_PID;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.RUN_USING_ENCODER;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.USE_DEAD_WHEEL_ODOMETRY;
-
-import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 
 // FTC dashboard http://192.168.43.1:8080/dash
 // Example MecanumDrive - https://github.com/NoahBres/road-runner-quickstart/blob/advanced-examples/TeamCode/src/main/java/org/firstinspires/ftc/teamcode/drive/SampleMecanumDrive.java
@@ -74,15 +79,15 @@ public final class MecanumDrive {
         public RevHubOrientationOnRobot.UsbFacingDirection usbFacingDirection =
                 RevHubOrientationOnRobot.UsbFacingDirection.BACKWARD; //Blackfrog_Setting for 2023 season
 
-        // drive model parameters
-        public double inPerTick = 0.00296735905044510385756676557864; // Blackfrog_Setting. 100/33700 https://rr.brott.dev/docs/v1-0/tuning. Refer to ForwardPushTest
-        public double lateralInPerTick = inPerTick; // Blackfrog_Setting https://rr.brott.dev/docs/v1-0/tuning. Refer to LateralPushTest
-        public double trackWidthTicks = 35.320744330791776; // Blackfrog_Setting https://rr.brott.dev/docs/v1-0/tuning. Refer to either Drive Encoders or Dead Wheels section
+ // drive model parameters
+        public double inPerTick =0.00295897; // Blackfrog_Setting. 141.24/5583.75 https://rr.brott.dev/docs/v1-0/tuning. Refer to ForwardPushTest
+        public double lateralInPerTick = 0.002101698017976019; // Blackfrog_Setting https://rr.brott.dev/docs/v1-0/tuning. Refer to LateralPushTest
+        public double trackWidthTicks = 4970.539852078557;//35.320744330791776; // Blackfrog_Setting https://rr.brott.dev/docs/v1-0/tuning. Refer to either Drive Encoders or Dead Wheels section
 
         // feedforward parameters (in tick units)
-        public double kS = 1.071378489626647; // Blackfrog_Setting
-        public double kV = 0.0005915647041886202; // Blackfrog_Setting
-        public double kA = 0.06; // Blackfrog_Setting 0.001995
+        public double kS = 0.8671020484248668; // Blackfrog_Setting 1.1890544370408778
+        public double kV =  0.0006063320933206687; // Blackfrog_Setting 0.00392616896265144
+        public double kA =0.0001; // Blackfrog_Setting 0.001995
 
         // path profile parameters (in inches)
         public double maxWheelVel = 50;
@@ -92,7 +97,7 @@ public final class MecanumDrive {
         // turn profile parameters (in radians)
         public double maxAngVel = Math.PI; // shared with path
         public double maxAngAccel = Math.PI;
-
+/*
         // path controller gains
         public double axialGain = 0.6;
         public double lateralGain = 0.0000000001;
@@ -101,8 +106,16 @@ public final class MecanumDrive {
         public double axialVelGain = 0.0000000001;
         public double lateralVelGain = 0.0000000001;
         public double headingVelGain = 0.0000000001; // shared with turn
+        */
+// path controller gains
+        public double axialGain = 1;
+        public double lateralGain = 3;
+        public double headingGain = 2.5; // shared with turn
 
-     }
+        public double axialVelGain = 0.1;
+        public double lateralVelGain = 1;
+        public double headingVelGain = 0.1; // shared with turn
+      }
 
     public static Params PARAMS = new Params();
     private static final String[] MOTOR_NAMES = {
@@ -310,7 +323,7 @@ public final class MecanumDrive {
         MecanumKinematics.WheelVelocities<Time> wheelVels = new MecanumKinematics(1).inverse(
                 PoseVelocity2dDual.constant(powers, 1));
 
-        double maxPowerMag = 1.0; // Blackfrog_setting. This was 1
+        double maxPowerMag = 1;
         for (DualNum<Time> power : wheelVels.all()) {
             maxPowerMag = Math.max(maxPowerMag, power.value());
         }

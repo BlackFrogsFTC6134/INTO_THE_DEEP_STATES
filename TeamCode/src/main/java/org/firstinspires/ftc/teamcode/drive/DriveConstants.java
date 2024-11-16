@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.drive;
+package org.firstinspires.ftc.teamcode.states;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
@@ -17,7 +17,7 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
  * and op modes themselves.
  */
 @Config
-public class DriveConstants {
+public class DriveConstants_States1 {
 
     /*
      * These are motor constants that should be listed online for your motors.
@@ -51,7 +51,7 @@ public class DriveConstants {
      */
     public static double WHEEL_RADIUS = 1.88976; // in
     public static double GEAR_RATIO = 1; // output (wheel) speed / input (motor) speed
-    public static double TRACK_WIDTH = 16.25; // in
+    public static double TRACK_WIDTH = 16.34; // in
 
     /*
      * These are the feedforward parameters used to model the drive motor behavior. If you are using
@@ -59,9 +59,9 @@ public class DriveConstants {
      * motor encoders or have elected not to use them for velocity control, these values should be
      * empirically tuned.
      */
-    public static double kV =  0.0005915647041886202; // -0.0002541651779952698; // 1.0 / rpmToVelocity(MAX_RPM); //BlackFrog_Setting. Default 1/...
-    public static double kA = 0.06;//BlackFrog_Setting. Default 0
-    public static double kStatic = 1.071378489626647; //3.358056261289263; //BlackFrog_Setting. Default 0
+    public static double kV =  1.0; // -0.0002541651779952698; // 1.0 / rpmToVelocity(MAX_RPM); //BlackFrog_Setting. Default 1/...
+    public static double kA = 0;//BlackFrog_Setting. Default 0
+    public static double kStatic = 0.0; //3.358056261289263; //BlackFrog_Setting. Default 0
 
     /*
      * These values are used to generate the trajectories for you robot. To ensure proper operation,

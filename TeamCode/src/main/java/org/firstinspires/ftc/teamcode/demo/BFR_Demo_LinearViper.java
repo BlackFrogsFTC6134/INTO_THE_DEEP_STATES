@@ -1,8 +1,7 @@
-package org.firstinspires.ftc.teamcode.demo;
+package org.firstinspires.ftc.teamcode.states.demo;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -34,7 +33,7 @@ public class BFR_Demo_LinearViper extends LinearOpMode {
         linearViper = hardwareMap.get(DcMotorEx.class, "Linear_Viper");
         rotateViper = hardwareMap.get(DcMotorEx.class, "Rotate_Viper");
 
-        linearViper.setDirection(DcMotorEx.Direction.REVERSE);
+        linearViper.setDirection(DcMotorEx.Direction.FORWARD);
         rotateViper.setDirection(DcMotorEx.Direction.FORWARD);
 
         linearViper.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
@@ -99,6 +98,7 @@ public class BFR_Demo_LinearViper extends LinearOpMode {
     public void moveLinearViperToPosition(int targetPosition) {
         linearViper.setTargetPosition(targetPosition);
         linearViper.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+        linearViper.setVelocity(200);
         linearViper.setPower(LINEAR_VIPER_FULL_POWER ? LINEAR_VIPER_NORMAL_SCALE : LINEAR_VIPER_SLOW_SCALE); // Set power to full (you can adjust this as needed)
 
         while (opModeIsActive() && linearViper.isBusy()) {
