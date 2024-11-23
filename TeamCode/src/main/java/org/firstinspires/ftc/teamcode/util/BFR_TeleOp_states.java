@@ -27,7 +27,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode.states.util;
+package org.firstinspires.ftc.teamcode.util;
 
 import android.view.View;
 
@@ -284,20 +284,6 @@ public class BFR_TeleOp_states extends LinearOpMode {
             leftBack.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
             rightFront.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
             rightBack.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
-/*
-            leftFront.setVelocity(100);
-            leftBack.setVelocity(100);
-            rightFront.setVelocity(100);
-            rightBack.setVelocity(100);
-*/
-            /* To determine Optimal SetVelocity
-            Know your motor specifications:
-            Find the maximum RPM (rotations per minute) of your motor.
-            Determine the encoder resolution (ticks per revolution) for your motor.
-            Calculate the theoretical maximum ticks per second:
-            Max ticks/second = (Max RPM / 60 seconds) * Ticks per revolution
-            Begin with about 50-70% of the theoretical maximum. */
-
         } else {
             leftFront.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
             leftBack.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);

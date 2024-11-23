@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.states.tuning;
+package org.firstinspires.ftc.teamcode.tuning;
 
 //@Config
 

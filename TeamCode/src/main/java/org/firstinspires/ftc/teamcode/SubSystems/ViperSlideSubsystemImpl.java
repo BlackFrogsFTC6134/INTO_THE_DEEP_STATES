@@ -1,5 +1,6 @@
-package org.firstinspires.ftc.teamcode.states.SubSystems;
+package org.firstinspires.ftc.teamcode.SubSystems;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 public class ViperSlideSubsystemImpl implements ViperSlideSubsystem {
@@ -37,12 +38,12 @@ public class ViperSlideSubsystemImpl implements ViperSlideSubsystem {
             }
 
     @Override
-        public void periodic() {
+        public void update(HardwareMap hardwareMap, Gamepad gamepad1, Gamepad gamepad2) {
             // Implement any periodic checks or updates
         }
 
         @Override
-        public void stop() {
+        public void stopSubsystem(HardwareMap hardwareMap) {
             linearViper.setPower(0);
         }
     }

@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.states;
+package org.firstinspires.ftc.teamcode.drive;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
@@ -17,13 +17,13 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
  * and op modes themselves.
  */
 @Config
-public class DriveConstants_States1 {
+public class DriveConstants {
 
     /*
      * These are motor constants that should be listed online for your motors.
      */
-    public static final double TICKS_PER_REV = 537.6; // Blackfrog_setting. Refer to "Encoder Resolution" on https://www.gobilda.com/5203-series-yellow-jacket-planetary-gear-motor-19-2-1-ratio-24mm-length-8mm-rex-shaft-312-rpm-3-3-5v-encoder/?srsltid=AfmBOorWZpTWt_wZt0bQT4wGwKpbHIqO7SIIoiSli7rzeBqmQN5UDTkx
-    public static final double MAX_RPM = 312;
+    public static final double TICKS_PER_REV = 384.5; // Blackfrog_setting. Refer to "Encoder Resolution" on https://www.gobilda.com/5203-series-yellow-jacket-planetary-gear-motor-19-2-1-ratio-24mm-length-8mm-rex-shaft-312-rpm-3-3-5v-encoder/?srsltid=AfmBOorWZpTWt_wZt0bQT4wGwKpbHIqO7SIIoiSli7rzeBqmQN5UDTkx
+    public static final double MAX_RPM = 435;
  //   public static final boolean RUN_USING_ENCODER = false; // true is using motor encoder. False if using odometry pods
     /*
 
@@ -49,9 +49,9 @@ public class DriveConstants_States1 {
      * angular distances although most angular parameters are wrapped in Math.toRadians() for
      * convenience. Make sure to exclude any gear ratio included in MOTOR_CONFIG from GEAR_RATIO.
      */
-    public static double WHEEL_RADIUS = 1.88976; // in
+    public static double WHEEL_RADIUS = 2.04724; // in . For 96 mm wheels its 1.88976
     public static double GEAR_RATIO = 1; // output (wheel) speed / input (motor) speed
-    public static double TRACK_WIDTH = 16.34; // in
+    public static double TRACK_WIDTH = 11; // in
 
     /*
      * These are the feedforward parameters used to model the drive motor behavior. If you are using
