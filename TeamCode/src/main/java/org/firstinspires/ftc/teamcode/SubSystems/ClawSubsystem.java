@@ -9,6 +9,9 @@ import com.qualcomm.robotcore.hardware.Servo;
 public class ClawSubsystem extends LinearOpMode implements Subsystem {
     private Servo clawRight, clawLeft;
     private LEDSubsystem led;
+    private static final double POSITION_TOLERANCE = 0.02;
+    private double targetPositionOpen = 0.5;
+    private double targetPositionClosed = 0.0;
 
     public ClawSubsystem(LEDSubsystem led) {
         this.led = led;
@@ -34,18 +37,25 @@ public class ClawSubsystem extends LinearOpMode implements Subsystem {
         telemetry.update(); */
     }
 
-    public void openClaw(HardwareMap hardwareMap) {
-        clawRight.setPosition(0.5);
-        clawLeft.setPosition(0.5); /*
-        telemetry.addData("Claws status: ", "open - 0.5");
-        telemetry.update();*/
+    public void openClaw() {
+        clawRight.setPosition(targetPositionOpen);
+        clawLeft.setPosition(targetPositionOpen); /*
+        if(isAtTargetPosition(targetPositionOpen)){
+            telemetry.addData("Claw position: ", "Open");
+        } */
     }
 
-    public void closeClaw(HardwareMap hardwareMap) {
-        clawRight.setPosition(0.0);
-        clawLeft.setPosition(0.0);/*
-        telemetry.addData("Claws status: ", "closed - 0.0");
-        telemetry.update(); */
+    public void closeClaw() {
+        clawRight.setPosition(targetPositionClosed);
+        clawLeft.setPosition(targetPositionClosed);  /*
+        if(isAtTargetPosition(targetPositionClosed)){
+            telemetry.addData("Claw position: ", "Closed");
+        }  */
+    }
+
+    public boolean isAtTargetPosition(double targetPosition) {
+        return Math.abs(clawRight.getPosition() - targetPosition) <= POSITION_TOLERANCE &&
+                Math.abs(clawLeft.getPosition() - targetPosition) <= POSITION_TOLERANCE;
     }
 
     @Override
@@ -59,7 +69,7 @@ public class ClawSubsystem extends LinearOpMode implements Subsystem {
 
     @Override
     public void stopSubsystem(HardwareMap hardwareMap) {
-        openClaw(hardwareMap);
+        openClaw();
     }
 
     @Override

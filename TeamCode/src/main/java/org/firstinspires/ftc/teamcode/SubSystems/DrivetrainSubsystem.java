@@ -5,6 +5,7 @@ import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
@@ -36,11 +37,13 @@ public class DrivetrainSubsystem extends LinearOpMode implements Subsystem {
     double PowerIncrease = 0.9;
     double NormalDrivetrainPower = 0.8;
 
-    private static final double TICKS_PER_REV = 370; // For GoBILDA 5202 motors
+    private static final double TICKS_PER_REV = 384.5; // For GoBILDA 5202 motors
+    private static final double FRICTION_COMPENSATION = 19.5; // For GoBILDA 5202 motors 19.5
+
     private static final double WHEEL_DIAMETER_INCHES = 4.09449;
     private static final double GEAR_RATIO = 1;
 
-    private static final double TICKS_PER_INCH = (TICKS_PER_REV * GEAR_RATIO / (WHEEL_DIAMETER_INCHES * Math.PI));
+    private static final double TICKS_PER_INCH = ((TICKS_PER_REV - FRICTION_COMPENSATION) * GEAR_RATIO / (WHEEL_DIAMETER_INCHES * Math.PI));
 
     private LEDSubsystem led;
     private DistanceSensorSubsystem distanceSensor1;
@@ -62,19 +65,16 @@ public class DrivetrainSubsystem extends LinearOpMode implements Subsystem {
         led.initialize(hardwareMap);
 
         led.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLACK);
-        sleep(500);
 
         leftFront = hardwareMap.get(DcMotorEx.class, "lftch0");
         leftBack = hardwareMap.get(DcMotorEx.class, "lrrech1");
         rightFront = hardwareMap.get(DcMotorEx.class, "rftch2");
         rightBack = hardwareMap.get(DcMotorEx.class, "rrrch3");
-        // POV Mode uses left joystick to go forward & strafe, and right joystick to rotate.
-        // Note: pushing stick forward gives negative value
 
-        leftBack.setDirection(DcMotorEx.Direction.REVERSE);
         leftFront.setDirection(DcMotorEx.Direction.REVERSE);
-        rightBack.setDirection(DcMotorEx.Direction.FORWARD);
+        leftBack.setDirection(DcMotorEx.Direction.REVERSE);
         rightFront.setDirection(DcMotorEx.Direction.FORWARD);
+        rightBack.setDirection(DcMotorEx.Direction.FORWARD);
 
         leftFront.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         leftBack.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
@@ -92,7 +92,6 @@ public class DrivetrainSubsystem extends LinearOpMode implements Subsystem {
         rightBack.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         led.setPattern(RevBlinkinLedDriver.BlinkinPattern.BEATS_PER_MINUTE_RAINBOW_PALETTE);
-        sleep(500);
 /*
         telemetry.addData("DrivetrainSubsystem initialized: ", "successfully");
         telemetry.update();*/
@@ -190,48 +189,104 @@ public class DrivetrainSubsystem extends LinearOpMode implements Subsystem {
         drive(hardwareMap, axial, lateral, yaw);
     }
 
-    public void DriveForward(HardwareMap hardwareMap, double inches) {
-        led.setPattern(RevBlinkinLedDriver.BlinkinPattern.fromNumber(1785));
-  /*      leftFront.setDirection(DcMotor.Direction.REVERSE);
-        leftBack.setDirection(DcMotor.Direction.REVERSE);
-        rightFront.setDirection(DcMotor.Direction.REVERSE);
-        rightBack.setDirection(DcMotor.Direction.REVERSE); */
+    public void driveSetTargetPosition(double inches) {
 
-        telemetry.addData("Moving: ", "Forward");
         leftFront.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         leftBack.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         rightFront.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         rightBack.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-        sleep(500);
 
         int ticks = (int)(inches * TICKS_PER_INCH );
-        // 38.4615385 Ticks Per Inch
+
         leftFront.setTargetPosition(ticks);
         leftBack.setTargetPosition(ticks);
         rightFront.setTargetPosition(ticks);
         rightBack.setTargetPosition(ticks);
 
         setRunMode(DcMotorEx.RunMode.RUN_TO_POSITION);
-        sleep(500);
-        //double drivetrainPower = 0.25;
-        leftFrontPower = 0.3;
-        leftBackPower = 0.3;
-        rightFrontPower = 0.3;
-        rightBackPower = 0.3;
-        setDrivePowers(hardwareMap, leftFrontPower, leftBackPower, rightFrontPower, rightBackPower);
-        telemetry.addData("leftFrontPower", leftFrontPower);
-        telemetry.addData("leftBackPower", leftBackPower);
-        telemetry.addData("rightFrontPower", rightFrontPower);
-        telemetry.addData("rightBackPower", rightBackPower);
+        sleep(100);
+        double drivetrainPower = 0.3;
+        setPower(drivetrainPower);
 
+        //Initialize the drivetrain to what it was set during initialization
+        leftFront.setDirection(DcMotorEx.Direction.REVERSE);
+        leftBack.setDirection(DcMotorEx.Direction.REVERSE);
+        rightFront.setDirection(DcMotorEx.Direction.FORWARD);
+        rightBack.setDirection(DcMotorEx.Direction.FORWARD);
 
-        //setPower(drivetrainPower); // Adjust power as needed
+        led.setPattern(RevBlinkinLedDriver.BlinkinPattern.BEATS_PER_MINUTE_RAINBOW_PALETTE);
 
-        //setDrivePowers(hardwareMap, drivetrainPower, drivetrainPower,drivetrainPower, drivetrainPower);
-/*
-        setRunMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-        setRunMode(DcMotorEx.RunMode.RUN_USING_ENCODER);*/
+        while (opModeIsActive() && isBusy()) {
+            //sleep(100);
+        }
 
+        leftFront.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        leftBack.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        rightFront.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        rightBack.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+
+    }
+
+    public void DriveForward(double inches) {
+        led.setPattern(RevBlinkinLedDriver.BlinkinPattern.fromNumber(1785));
+        telemetry.addData("Moving: ", "Forward");
+        driveSetTargetPosition(inches);
+
+    }
+    public void DriveBackward(double inches) {
+        led.setPattern(RevBlinkinLedDriver.BlinkinPattern.fromNumber(1785));
+
+        telemetry.addData("Moving: ", "Backward");
+
+        leftFront.setDirection(DcMotorEx.Direction.FORWARD);
+        leftBack.setDirection(DcMotorEx.Direction.FORWARD);
+        rightFront.setDirection(DcMotorEx.Direction.REVERSE);
+        rightBack.setDirection(DcMotorEx.Direction.REVERSE);
+        driveSetTargetPosition(inches);
+
+    }
+
+    public void strafeDriveLeft(double inches) {
+        led.setPattern(RevBlinkinLedDriver.BlinkinPattern.fromNumber(1785));
+
+        leftFront.setDirection(DcMotorEx.Direction.FORWARD);
+        leftBack.setDirection(DcMotorEx.Direction.REVERSE);
+        rightFront.setDirection(DcMotorEx.Direction.FORWARD);
+        rightBack.setDirection(DcMotorEx.Direction.REVERSE);
+
+        driveSetTargetPosition(inches);
+    }
+    public void strafeDriveRight(double inches) {
+        led.setPattern(RevBlinkinLedDriver.BlinkinPattern.fromNumber(1785));
+
+        leftFront.setDirection(DcMotorEx.Direction.REVERSE);
+        leftBack.setDirection(DcMotorEx.Direction.FORWARD);
+        rightFront.setDirection(DcMotorEx.Direction.REVERSE);
+        rightBack.setDirection(DcMotorEx.Direction.FORWARD);
+
+        driveSetTargetPosition(inches);
+    }
+
+    public void turnDriveLeft(double inches) {
+        led.setPattern(RevBlinkinLedDriver.BlinkinPattern.fromNumber(1785));
+
+        leftFront.setDirection(DcMotorEx.Direction.FORWARD);
+        leftBack.setDirection(DcMotorEx.Direction.FORWARD);
+        rightFront.setDirection(DcMotorEx.Direction.FORWARD);
+        rightBack.setDirection(DcMotorEx.Direction.FORWARD);
+
+        driveSetTargetPosition(inches);
+    }
+
+    public void turnDriveRight(double inches) {
+        led.setPattern(RevBlinkinLedDriver.BlinkinPattern.fromNumber(1785));
+
+        leftFront.setDirection(DcMotorEx.Direction.REVERSE);
+        leftBack.setDirection(DcMotorEx.Direction.REVERSE);
+        rightFront.setDirection(DcMotorEx.Direction.REVERSE);
+        rightBack.setDirection(DcMotorEx.Direction.REVERSE);
+
+        driveSetTargetPosition(inches);
     }
 
     public boolean isBusy() {

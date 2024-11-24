@@ -47,7 +47,7 @@ public class ExtensionSubsystem extends LinearOpMode implements Subsystem {
     @Override
     public void update(HardwareMap hardwareMap, Gamepad gamepad1, Gamepad gamepad2) {
         // Update logic if needed
-        extensionMotor1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        //extensionMotor1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         extensionMotor1.setPower(-gamepad2.left_stick_y);
     }
 

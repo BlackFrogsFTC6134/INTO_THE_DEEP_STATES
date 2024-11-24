@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.auton;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -32,7 +32,7 @@ public class driveToDistance_Auton extends LinearOpMode {
     double NormalDrivetrainPower = 0.8;
 
     private OpModeEx opMode;
-    private static final double INCHES_TO_DRIVE = 70.0;
+    private static final double INCHES_TO_DRIVE = 23.5;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -63,22 +63,59 @@ public class driveToDistance_Auton extends LinearOpMode {
         telemetry.addData("Status", "Waiting for user to press start");
 
         if (opModeIsActive()) {
-            driveToDistance(INCHES_TO_DRIVE);
+                driveToDistance("DriveForward", INCHES_TO_DRIVE);
+                sleep(1000);
 
-            telemetry.addData("Status", "Autonomous Complete");
-            telemetry.update();
+
+                driveToDistance("DriveBackward", INCHES_TO_DRIVE);
+                sleep(1000);
+
+
+                driveToDistance("strafeDriveLeft", INCHES_TO_DRIVE);
+                sleep(1000);
+
+
+
+                driveToDistance("strafeDriveRight", INCHES_TO_DRIVE);
+                sleep(1000);
+
+
+
+                driveToDistance("turnDriveLeft", INCHES_TO_DRIVE);
+                sleep(1000);
+
+
+
+                driveToDistance("turnDriveRight", INCHES_TO_DRIVE);
+                sleep(1000);
+
+
+
         }
+        drivetrain.stopSubsystem(hardwareMap);
     }
 
-        private void driveToDistance(double inches) {
-            drivetrain.DriveForward(hardwareMap, inches);
 
-            while (opModeIsActive() && drivetrain.isBusy()) {
-      /*          telemetry.addData("Status", "Driving to target");
-                telemetry.addData("Current Distance", drivetrain.getCurrentDistance());
-                telemetry.addData("Target Distance", inches);
-                telemetry.update();*/
-            }
-            drivetrain.stopSubsystem(hardwareMap);
+    private void driveToDistance(String direction, double inches) {
+        switch (direction) {
+            case "DriveForward":
+                drivetrain.DriveForward(inches);
+                break;
+            case "DriveBackward":
+                drivetrain.DriveBackward(inches);
+                break;
+            case "strafeDriveLeft":
+                drivetrain.strafeDriveLeft(inches);
+                break;
+            case "strafeDriveRight":
+                drivetrain.strafeDriveRight(inches);
+                break;
+            case "turnDriveLeft":
+                drivetrain.turnDriveLeft(inches);
+                break;
+            case "turnDriveRight":
+                drivetrain.turnDriveRight(inches);
+                break;
         }
     }
+}

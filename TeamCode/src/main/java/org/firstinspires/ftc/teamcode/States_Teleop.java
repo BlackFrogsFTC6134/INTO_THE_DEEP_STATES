@@ -128,6 +128,7 @@ public class States_Teleop extends LinearOpMode {
                 drivetrain.decreaseDrivePower(hardwareMap, gamepadState);
             }
             // Directional Flipping Section
+            /*
             if (Gamepad1.a) {
                 drivetrain.makeRearOfRobotFront(hardwareMap, gamepadState);
             }
@@ -139,16 +140,27 @@ public class States_Teleop extends LinearOpMode {
                 // When Holding X button ALONE Left Side of robot becomes front
                 drivetrain.makeLeftOfRobotFront(hardwareMap, gamepadState);
             }
+            */
+
+            // SPEC OPS Pressing B Alone opens and closes claw
+            if (Gamepad2.b) {
+                claw.openClaw();
+            }
 
             // SPEC OPS Pressing A Alone opens and closes claw
             if (Gamepad2.a) {
-                claw.closeClaw(hardwareMap);
+                claw.closeClaw();
             }
-            // SPEC OPS Pressing B Alone opens and closes claw
-            if (Gamepad2.b) {
-                claw.openClaw(hardwareMap);
 
+            // SPEC OPS Pressing X ALONE Moves Wrist Up
+            if (Gamepad2.x) {
+                pivot.setServoPosition(hardwareMap, 0.26);
             }
+            // SPEC OPS Pressing Y ALONE Moves Wrist Down
+            if (Gamepad2.y) {
+                pivot.setServoPosition(hardwareMap, 0.1);
+            }
+
             // SPEC OPS Pressing RightBumper ALONE Moves Pivot UP
             // SPEC OPS Pressing LeftBumper ALONE Moves Pivot Down
             if (Gamepad2.right_bumper) {
@@ -161,14 +173,7 @@ public class States_Teleop extends LinearOpMode {
             }
             // SPEC OPS Pressing Right Bumper ALONE Moves Elevator Up
             // SPEC OPS Pressing Left Bumper ALONE Moves Elevator Down
-            // SPEC OPS Pressing X ALONE Moves Wrist Up
-            if (Gamepad2.x) {
-                pivot.setServoPosition(hardwareMap, 0.26);
-            }
-            // SPEC OPS Pressing Y ALONE Moves Wrist Down
-            if (Gamepad2.y) {
-                pivot.setServoPosition(hardwareMap, 0.1);
-            }
+
         }
         telemetry.addData("Status", "Robot stopped");
         telemetry.update();

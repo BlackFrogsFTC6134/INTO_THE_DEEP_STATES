@@ -39,7 +39,7 @@ public class PivotSubsystem extends LinearOpMode implements Subsystem {
         led.setPattern(RevBlinkinLedDriver.BlinkinPattern.BEATS_PER_MINUTE_RAINBOW_PALETTE);
     }
 
-    public void setMotorPosition(HardwareMap hardwareMap, int position) {
+    public void setMotorPosition(int position) {
         led.setPattern(RevBlinkinLedDriver.BlinkinPattern.SINELON_RAINBOW_PALETTE);
         pivotMotor.setTargetPosition(position);
         pivotMotor.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
@@ -47,25 +47,32 @@ public class PivotSubsystem extends LinearOpMode implements Subsystem {
         led.setPattern(RevBlinkinLedDriver.BlinkinPattern.fromNumber(1845));
     }
 
-    public void setServoPosition(HardwareMap hardwareMap, double position) {
+    public void setServoPosition(double position) {
         pivotreh2.setPosition(position);
         pivotleh3.setPosition(position);
     }
 
-    public void setPivotMotorPosition(HardwareMap hardwareMap,int position, double power) {
+    public void setPivotMotorPosition(int position, double power) {
         pivotMotor.setTargetPosition(position);
         pivotMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         pivotMotor.setPower(power);
     }
 
-    public void setPivotMotorPower(HardwareMap hardwareMap, double power){
+    public void setPivotMotorPower(double power){
         pivotMotor.setPower(power);
+        while (opModeIsActive() && isBusy()) {
+            sleep(100);
+        }
+    }
+
+    public boolean isBusy() {
+        return pivotMotor.isBusy();
     }
 
     @Override
     public void update(HardwareMap hardwareMap, Gamepad gamepad1, Gamepad gamepad2) {
         // Update logic if needed
-        pivotMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        //pivotMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         pivotMotor.setPower(-gamepad2.right_stick_y);
     }
 
