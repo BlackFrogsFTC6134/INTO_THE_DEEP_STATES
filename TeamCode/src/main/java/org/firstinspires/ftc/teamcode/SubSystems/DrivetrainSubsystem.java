@@ -119,13 +119,6 @@ public class DrivetrainSubsystem extends LinearOpMode implements Subsystem {
 
         led.setPattern(RevBlinkinLedDriver.BlinkinPattern.SHOT_BLUE);
         sleep(250);
-
-        //LeftFrontDistanceSensor = distanceSensor1.getLeftDistance();
-        //RightFrontDistanceSensor = distanceSensor1.getRightDistance();
-/*
-        telemetry.addData("LeftFrontDistanceSensor", LeftFrontDistanceSensor);
-        telemetry.addData("RightFrontDistanceSensor", RightFrontDistanceSensor);
-        telemetry.update();*/
     }
 
     public void setDrivePowers(HardwareMap hardwareMap, double leftFrontPower, double leftBackPower, double rightFrontPower, double rightBackPower ) {
@@ -219,31 +212,20 @@ public class DrivetrainSubsystem extends LinearOpMode implements Subsystem {
         while (opModeIsActive() && isBusy()) {
             //sleep(100);
         }
-
-        leftFront.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-        leftBack.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-        rightFront.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-        rightBack.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-
     }
 
     public void DriveForward(double inches) {
         led.setPattern(RevBlinkinLedDriver.BlinkinPattern.fromNumber(1785));
-        telemetry.addData("Moving: ", "Forward");
         driveSetTargetPosition(inches);
-
     }
+
     public void DriveBackward(double inches) {
         led.setPattern(RevBlinkinLedDriver.BlinkinPattern.fromNumber(1785));
-
-        telemetry.addData("Moving: ", "Backward");
-
         leftFront.setDirection(DcMotorEx.Direction.FORWARD);
         leftBack.setDirection(DcMotorEx.Direction.FORWARD);
         rightFront.setDirection(DcMotorEx.Direction.REVERSE);
         rightBack.setDirection(DcMotorEx.Direction.REVERSE);
         driveSetTargetPosition(inches);
-
     }
 
     public void strafeDriveLeft(double inches) {
@@ -253,9 +235,9 @@ public class DrivetrainSubsystem extends LinearOpMode implements Subsystem {
         leftBack.setDirection(DcMotorEx.Direction.REVERSE);
         rightFront.setDirection(DcMotorEx.Direction.FORWARD);
         rightBack.setDirection(DcMotorEx.Direction.REVERSE);
-
         driveSetTargetPosition(inches);
     }
+
     public void strafeDriveRight(double inches) {
         led.setPattern(RevBlinkinLedDriver.BlinkinPattern.fromNumber(1785));
 
@@ -263,7 +245,6 @@ public class DrivetrainSubsystem extends LinearOpMode implements Subsystem {
         leftBack.setDirection(DcMotorEx.Direction.FORWARD);
         rightFront.setDirection(DcMotorEx.Direction.REVERSE);
         rightBack.setDirection(DcMotorEx.Direction.FORWARD);
-
         driveSetTargetPosition(inches);
     }
 
@@ -274,7 +255,6 @@ public class DrivetrainSubsystem extends LinearOpMode implements Subsystem {
         leftBack.setDirection(DcMotorEx.Direction.FORWARD);
         rightFront.setDirection(DcMotorEx.Direction.FORWARD);
         rightBack.setDirection(DcMotorEx.Direction.FORWARD);
-
         driveSetTargetPosition(inches);
     }
 
@@ -285,7 +265,6 @@ public class DrivetrainSubsystem extends LinearOpMode implements Subsystem {
         leftBack.setDirection(DcMotorEx.Direction.REVERSE);
         rightFront.setDirection(DcMotorEx.Direction.REVERSE);
         rightBack.setDirection(DcMotorEx.Direction.REVERSE);
-
         driveSetTargetPosition(inches);
     }
 
@@ -299,7 +278,7 @@ public class DrivetrainSubsystem extends LinearOpMode implements Subsystem {
         return averageTicks / TICKS_PER_INCH;
     }
 
-    private void setRunMode(DcMotor.RunMode runMode) {
+    private void setRunMode(DcMotorEx.RunMode runMode) {
         leftFront.setMode(runMode);
         leftBack.setMode(runMode);
         rightFront.setMode(runMode);
@@ -311,6 +290,13 @@ public class DrivetrainSubsystem extends LinearOpMode implements Subsystem {
         leftBack.setPower(power);
         rightFront.setPower(power);
         rightBack.setPower(power);
+    }
+
+    private void resetPower() {
+        leftFront.setPower(0);
+        leftBack.setPower(0);
+        rightFront.setPower(0);
+        rightBack.setPower(0);
     }
 
     public void DriveRearward(HardwareMap hardwareMap, int RearwardDistance) {
@@ -401,7 +387,7 @@ public class DrivetrainSubsystem extends LinearOpMode implements Subsystem {
 
     @Override
     public void stopSubsystem(HardwareMap hardwareMap) {
-        setPower(0);
+        resetPower();
         led.setPattern(RevBlinkinLedDriver.BlinkinPattern.BLACK);
     }
 

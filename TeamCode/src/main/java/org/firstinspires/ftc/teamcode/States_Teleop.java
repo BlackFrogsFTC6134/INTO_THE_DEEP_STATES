@@ -29,7 +29,10 @@ public class States_Teleop extends LinearOpMode {
     private Gamepad Gamepad1, Gamepad2;
 
     double NormalDrivetrainPower = 0.8;
-            ;
+
+    boolean gamepad2_b_pressed = false;
+    boolean gamepad2_a_pressed = false;
+
     @Override
     public void runOpMode() throws InterruptedException{
         ElapsedTime runtime;
@@ -109,12 +112,12 @@ public class States_Teleop extends LinearOpMode {
                 extension.update(hardwareMap, Gamepad1, Gamepad2);
             }
             if (Gamepad2.back && Gamepad2.dpad_up) {
-                pivot.setMotorPosition(hardwareMap, (int) (400 * 19.2));
+                pivot.setMotorPosition((int) (400 * 19.2));
             } else if (Gamepad2.back && Gamepad2.dpad_right) {
-                pivot.setMotorPosition(hardwareMap, (int) (400 * 10.0));
+                pivot.setMotorPosition((int) (400 * 10.0));
 
             } else if (Gamepad2.back && Gamepad2.dpad_down) {
-                pivot.setMotorPosition(hardwareMap, (int) (0));
+                pivot.setMotorPosition((int) (0));
             } else if (Gamepad2.back && Gamepad2.dpad_left) {
                 // Reset 0 (home set)
                 pivot.resetEncoder(hardwareMap);
@@ -144,32 +147,40 @@ public class States_Teleop extends LinearOpMode {
 
             // SPEC OPS Pressing B Alone opens and closes claw
             if (Gamepad2.b) {
-                claw.openClaw();
+                gamepad2_b_pressed = true;
+                if(gamepad2_b_pressed){
+                    claw.openClaw();
+                    gamepad2_b_pressed = false;
+                }
             }
 
             // SPEC OPS Pressing A Alone opens and closes claw
             if (Gamepad2.a) {
-                claw.closeClaw();
+                gamepad2_a_pressed = true;
+                if(gamepad2_a_pressed){
+                    claw.closeClaw();
+                    gamepad2_a_pressed = false;
+                }
             }
 
             // SPEC OPS Pressing X ALONE Moves Wrist Up
             if (Gamepad2.x) {
-                pivot.setServoPosition(hardwareMap, 0.26);
+                pivot.setServoPosition(0.26);
             }
             // SPEC OPS Pressing Y ALONE Moves Wrist Down
             if (Gamepad2.y) {
-                pivot.setServoPosition(hardwareMap, 0.1);
+                pivot.setServoPosition(0.1);
             }
 
             // SPEC OPS Pressing RightBumper ALONE Moves Pivot UP
             // SPEC OPS Pressing LeftBumper ALONE Moves Pivot Down
             if (Gamepad2.right_bumper) {
-                pivot.setPivotMotorPower(hardwareMap, 1.0);
+                pivot.setPivotMotorPower(1.0);
 
             } else if (Gamepad2.left_bumper) {
-                pivot.setPivotMotorPower(hardwareMap, -1.0);
+                pivot.setPivotMotorPower(-1.0);
             } else {
-                pivot.setPivotMotorPower(hardwareMap, 0.0);
+                pivot.setPivotMotorPower(0.0);
             }
             // SPEC OPS Pressing Right Bumper ALONE Moves Elevator Up
             // SPEC OPS Pressing Left Bumper ALONE Moves Elevator Down
