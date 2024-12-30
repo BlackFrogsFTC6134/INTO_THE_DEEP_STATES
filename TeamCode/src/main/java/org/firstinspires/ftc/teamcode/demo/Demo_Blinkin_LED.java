@@ -4,16 +4,16 @@ import com.qualcomm.hardware.rev.RevBlinkinLedDriver;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.SubSystems.LEDSubsystem;
+import org.firstinspires.ftc.teamcode.SubSystems.LED;
 
 @TeleOp(name="Demo_Blinkin_LED", group="Concept")
 
 public class Demo_Blinkin_LED extends LinearOpMode {
-    private LEDSubsystem led;
+    private LED led;
 
-    public Demo_Blinkin_LED (){
-        led = new LEDSubsystem();
-        led.initialize(hardwareMap);
+    public Demo_Blinkin_LED () throws InterruptedException {
+        led = new LED(hardwareMap, telemetry);
+        led.initialize(hardwareMap, telemetry);
     }
 
     @Override

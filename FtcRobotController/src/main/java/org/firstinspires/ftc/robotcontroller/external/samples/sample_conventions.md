@@ -70,7 +70,7 @@ left_arm
 left_hand
 right_hand
 arm
-claw
+clawSubsystem
 
 ** Sensors:
 sensor_color

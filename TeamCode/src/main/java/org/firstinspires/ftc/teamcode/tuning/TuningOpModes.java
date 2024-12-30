@@ -21,11 +21,12 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpModeManager;
 import com.qualcomm.robotcore.eventloop.opmode.OpModeRegistrar;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.internal.opmode.OpModeMeta;
 import org.firstinspires.ftc.teamcode.drive.MecanumDrive;
 import org.firstinspires.ftc.teamcode.drive.TankDrive;
-import org.firstinspires.ftc.teamcode.util.ThreeDeadWheelLocalizer;
-import org.firstinspires.ftc.teamcode.util.TwoDeadWheelLocalizer;
+import org.firstinspires.ftc.teamcode.utils.ThreeDeadWheelLocalizer;
+import org.firstinspires.ftc.teamcode.utils.TwoDeadWheelLocalizer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,7 +35,7 @@ import java.util.List;
 public final class TuningOpModes {
     // TODO: change this to TankDrive.class if you're using tank
     public static final Class<?> DRIVE_CLASS = MecanumDrive.class; //Blackfrog_setting
-
+    static Telemetry telemetry;
     public static final String GROUP = "quickstart";
     public static final boolean DISABLED = false;
 
@@ -99,7 +100,7 @@ public final class TuningOpModes {
                         perpEncs,
                         md.lazyImu,
                         md.voltageSensor,
-                        () -> new MotorFeedforward(MecanumDrive.PARAMS.kS,
+                        () -> new MotorFeedforward(MecanumDrive.PARAMS.kStatic,
                                 MecanumDrive.PARAMS.kV / MecanumDrive.PARAMS.inPerTick,
                                 MecanumDrive.PARAMS.kA / MecanumDrive.PARAMS.inPerTick)
                 );

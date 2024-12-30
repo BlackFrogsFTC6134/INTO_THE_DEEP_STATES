@@ -14,7 +14,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 public class _6gr1 extends LinearOpMode {
 
     private DcMotor lrrech1;
-    private DcMotor lftch0;
+    private DcMotor lfrtch0;
     private DcMotor rrrch3;
     private DcMotor rftch2;
     private Servo clawreh0;
@@ -63,7 +63,7 @@ public class _6gr1 extends LinearOpMode {
         double max;
 
         lrrech1 = hardwareMap.get(DcMotor.class, "lrrech1");
-        lftch0 = hardwareMap.get(DcMotor.class, "lftch0");
+        lfrtch0 = hardwareMap.get(DcMotor.class, "lfrtch0");
         rrrch3 = hardwareMap.get(DcMotor.class, "rrrch3");
         rftch2 = hardwareMap.get(DcMotor.class, "rftch2");
         clawreh0 = hardwareMap.get(Servo.class, "clawreh0");
@@ -95,7 +95,7 @@ public class _6gr1 extends LinearOpMode {
         // Keep testing until ALL the wheels move the robot forward when you push the left joystick forward.
         // <--- Click blue icon to see important note re. testing motor directions.
         lrrech1.setDirection(DcMotor.Direction.REVERSE);
-        lftch0.setDirection(DcMotor.Direction.REVERSE);
+        lfrtch0.setDirection(DcMotor.Direction.REVERSE);
         rrrch3.setDirection(DcMotor.Direction.FORWARD);
         rftch2.setDirection(DcMotor.Direction.FORWARD);
         // Servo
@@ -248,7 +248,7 @@ public class _6gr1 extends LinearOpMode {
             // Send calculated power to wheels.
             lrrech1.setPower(leftFrontPower);
             rrrch3.setPower(rightFrontPower);
-            lftch0.setPower(leftBackPower);
+            lfrtch0.setPower(leftBackPower);
             rftch2.setPower(rightBackPower);
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime);
@@ -265,8 +265,8 @@ public class _6gr1 extends LinearOpMode {
                 clawreh0.setPosition(0.5);
                 clawleh1.setPosition(0.5);
             }
-            // SPEC OPS Pressing RightBumper ALONE Moves Pivot UP
-            // SPEC OPS Pressing LeftBumper ALONE Moves Pivot Down
+            // SPEC OPS Pressing RightBumper ALONE Moves PivotSubsystem UP
+            // SPEC OPS Pressing LeftBumper ALONE Moves PivotSubsystem Down
             if (gamepad2.right_bumper) {
                 pivoteh1.setPower(1);
             } else if (gamepad2.left_bumper) {
@@ -294,28 +294,28 @@ public class _6gr1 extends LinearOpMode {
      */
     private void DriveForward(int RightFrontPWR, int RightRearPWR, int LeftFrontPWR, int LeftRearPWR, int ForwardDistance) {
         Blinkin12.setPattern(RevBlinkinLedDriver.BlinkinPattern.fromNumber(1785));
-        lftch0.setDirection(DcMotor.Direction.REVERSE);
+        lfrtch0.setDirection(DcMotor.Direction.REVERSE);
         lrrech1.setDirection(DcMotor.Direction.REVERSE);
         rftch2.setDirection(DcMotor.Direction.REVERSE);
         rrrch3.setDirection(DcMotor.Direction.REVERSE);
-        lftch0.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        lfrtch0.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         lrrech1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rftch2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rrrch3.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         // 38.4615385 Ticks Per Inch
-        lftch0.setTargetPosition((int) (38.4615385 * ForwardDistance));
+        lfrtch0.setTargetPosition((int) (38.4615385 * ForwardDistance));
         lrrech1.setTargetPosition((int) (38.4615385 * ForwardDistance));
         rftch2.setTargetPosition((int) (38.4615385 * ForwardDistance));
         rrrch3.setTargetPosition((int) (38.4615385 * ForwardDistance));
-        lftch0.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        lfrtch0.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         lrrech1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rftch2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rrrch3.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        lftch0.setPower(LeftFrontPWR);
+        lfrtch0.setPower(LeftFrontPWR);
         lrrech1.setPower(LeftRearPWR);
         rftch2.setPower(RightFrontPWR);
         rrrch3.setPower(RightRearPWR);
-        while (opModeIsActive() && lftch0.isBusy() && lrrech1.isBusy() && rftch2.isBusy() && rrrch3.isBusy()) {
+        while (opModeIsActive() && lfrtch0.isBusy() && lrrech1.isBusy() && rftch2.isBusy() && rrrch3.isBusy()) {
             idle();
         }
     }
@@ -325,28 +325,28 @@ public class _6gr1 extends LinearOpMode {
      */
     private void DriveRearward(int RightFrontPWR, int RightRearPWR, int LeftFrontPWR, int LeftRearPWR, int RearwardDistance) {
         Blinkin12.setPattern(RevBlinkinLedDriver.BlinkinPattern.fromNumber(1805));
-        lftch0.setDirection(DcMotor.Direction.FORWARD);
+        lfrtch0.setDirection(DcMotor.Direction.FORWARD);
         lrrech1.setDirection(DcMotor.Direction.FORWARD);
         rftch2.setDirection(DcMotor.Direction.FORWARD);
         rrrch3.setDirection(DcMotor.Direction.FORWARD);
-        lftch0.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        lfrtch0.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         lrrech1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rftch2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rrrch3.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         // 38.4615385 Ticks Per Inch
-        lftch0.setTargetPosition((int) (38.4615385 * RearwardDistance));
+        lfrtch0.setTargetPosition((int) (38.4615385 * RearwardDistance));
         lrrech1.setTargetPosition((int) (38.4615385 * RearwardDistance));
         rftch2.setTargetPosition((int) (38.4615385 * RearwardDistance));
         rrrch3.setTargetPosition((int) (38.4615385 * RearwardDistance));
-        lftch0.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        lfrtch0.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         lrrech1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rftch2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rrrch3.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        lftch0.setPower(LeftFrontPWR);
+        lfrtch0.setPower(LeftFrontPWR);
         lrrech1.setPower(LeftRearPWR);
         rftch2.setPower(RightFrontPWR);
         rrrch3.setPower(RightRearPWR);
-        while (opModeIsActive() && lftch0.isBusy() && lrrech1.isBusy() && rftch2.isBusy() && rrrch3.isBusy()) {
+        while (opModeIsActive() && lfrtch0.isBusy() && lrrech1.isBusy() && rftch2.isBusy() && rrrch3.isBusy()) {
             idle();
         }
     }
@@ -357,29 +357,29 @@ public class _6gr1 extends LinearOpMode {
     private void TurnRight(double RightFrontPWR, double RightRearPWR, double LeftFrontPWR, double LeftRearPWR, int RightTurnDegrees) {
         Blinkin12.setPattern(RevBlinkinLedDriver.BlinkinPattern.fromNumber(1825));
         // ToPivotRightSideMotorValuesReversed
-        lftch0.setDirection(DcMotor.Direction.FORWARD);
+        lfrtch0.setDirection(DcMotor.Direction.FORWARD);
         lrrech1.setDirection(DcMotor.Direction.FORWARD);
         rftch2.setDirection(DcMotor.Direction.REVERSE);
         rrrch3.setDirection(DcMotor.Direction.REVERSE);
-        lftch0.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        lfrtch0.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         lrrech1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rftch2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rrrch3.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         // 38.4615385 Ticks Per Inch multiplied by .25 equals 1 degree of rotation
         // Adjust degrees value up or down to increase or decrease number of degrees witnessed in testing
-        lftch0.setTargetPosition((int) (38.4615385 * 0.25555556 * RightTurnDegrees));
+        lfrtch0.setTargetPosition((int) (38.4615385 * 0.25555556 * RightTurnDegrees));
         lrrech1.setTargetPosition((int) (38.4615385 * 0.25555556 * RightTurnDegrees));
         rftch2.setTargetPosition((int) (38.4615385 * 0.25555556 * RightTurnDegrees));
         rrrch3.setTargetPosition((int) (38.4615385 * 0.25555556 * RightTurnDegrees));
-        lftch0.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        lfrtch0.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         lrrech1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rftch2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rrrch3.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        lftch0.setPower(LeftFrontPWR);
+        lfrtch0.setPower(LeftFrontPWR);
         lrrech1.setPower(LeftRearPWR);
         rftch2.setPower(RightFrontPWR);
         rrrch3.setPower(RightRearPWR);
-        while (opModeIsActive() && lftch0.isBusy() && lrrech1.isBusy() && rftch2.isBusy() && rrrch3.isBusy()) {
+        while (opModeIsActive() && lfrtch0.isBusy() && lrrech1.isBusy() && rftch2.isBusy() && rrrch3.isBusy()) {
             idle();
         }
     }
@@ -390,29 +390,29 @@ public class _6gr1 extends LinearOpMode {
     private void LeftTurn(double RightFrontPWR, double RightRearPWR, double LeftFrontPWR, double LeftRearPWR, int LeftTurnDegrees) {
         Blinkin12.setPattern(RevBlinkinLedDriver.BlinkinPattern.fromNumber(1845));
         // ToPivotRightSideMotorValuesReversed
-        lftch0.setDirection(DcMotor.Direction.REVERSE);
+        lfrtch0.setDirection(DcMotor.Direction.REVERSE);
         lrrech1.setDirection(DcMotor.Direction.REVERSE);
         rftch2.setDirection(DcMotor.Direction.FORWARD);
         rrrch3.setDirection(DcMotor.Direction.FORWARD);
-        lftch0.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        lfrtch0.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         lrrech1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rftch2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rrrch3.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         // 38.4615385 Ticks Per Inch multiplied by .25 equals 1 degree of rotation
         // Adjust degrees value up or down to increase or decrease number of degrees witnessed in testing
-        lftch0.setTargetPosition((int) (38.4615385 * 0.25555556 * LeftTurnDegrees));
+        lfrtch0.setTargetPosition((int) (38.4615385 * 0.25555556 * LeftTurnDegrees));
         lrrech1.setTargetPosition((int) (38.4615385 * 0.25555556 * LeftTurnDegrees));
         rftch2.setTargetPosition((int) (38.4615385 * 0.25555556 * LeftTurnDegrees));
         rrrch3.setTargetPosition((int) (38.4615385 * 0.25555556 * LeftTurnDegrees));
-        lftch0.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        lfrtch0.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         lrrech1.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rftch2.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rrrch3.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        lftch0.setPower(LeftFrontPWR);
+        lfrtch0.setPower(LeftFrontPWR);
         lrrech1.setPower(LeftRearPWR);
         rftch2.setPower(RightFrontPWR);
         rrrch3.setPower(RightRearPWR);
-        while (opModeIsActive() && lftch0.isBusy() && lrrech1.isBusy() && rftch2.isBusy() && rrrch3.isBusy()) {
+        while (opModeIsActive() && lfrtch0.isBusy() && lrrech1.isBusy() && rftch2.isBusy() && rrrch3.isBusy()) {
             idle();
         }
     }
